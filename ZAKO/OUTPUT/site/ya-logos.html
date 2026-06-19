@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ya! — Logo Options</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Bebas+Neue&family=DM+Serif+Display:ital@0;1&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --amber:  #E89420;
+      --dark:   #07070A;
+      --light:  #F5F0E8;
+      --muted:  #5A5650;
+      --rule:   #222228;
+    }
+
+    body {
+      background: var(--dark);
+      color: var(--light);
+      font-family: 'Syne', sans-serif;
+      padding: 60px 48px;
+      min-height: 100vh;
+    }
+
+    header {
+      margin-bottom: 56px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--rule);
+    }
+    header .label {
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: 8px;
+    }
+    header h1 {
+      font-size: 42px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--light);
+    }
+    header p {
+      font-size: 14px;
+      color: var(--muted);
+      margin-top: 6px;
+      font-weight: 400;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+    }
+
+    .logo-card {
+      background: #0D0D12;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .logo-canvas {
+      width: 100%;
+      aspect-ratio: 4/3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .logo-canvas svg {
+      width: 100%;
+      height: 100%;
+    }
+    .logo-canvas.light {
+      background: var(--light);
+    }
+    .logo-canvas.dark {
+      background: var(--dark);
+    }
+    .logo-meta {
+      padding: 16px 20px 20px;
+      border-top: 1px solid var(--rule);
+    }
+    .logo-num {
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: 4px;
+    }
+    .logo-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--light);
+      margin-bottom: 4px;
+      letter-spacing: -0.01em;
+    }
+    .logo-desc {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .logo-variants {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .variant-thumb {
+      width: 40px;
+      height: 28px;
+      border-radius: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .variant-thumb svg {
+      width: 36px;
+      height: 24px;
+    }
+    .vt-dark { background: var(--dark); }
+    .vt-light { background: var(--light); }
+    .vt-amber { background: var(--amber); }
+
+    @media (max-width: 1000px) {
+      .grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 600px) {
+      .grid { grid-template-columns: 1fr; }
+      body { padding: 32px 20px; }
+    }
+
+    @keyframes signal-pulse {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 1; }
+    }
+    @keyframes trail-fade {
+      0%, 100% { opacity: 0.08; }
+      50% { opacity: 0.22; }
+    }
+    .signal-arc-1 { animation: signal-pulse 2.2s ease-in-out infinite; animation-delay: 0s; }
+    .signal-arc-2 { animation: signal-pulse 2.2s ease-in-out infinite; animation-delay: 0.4s; }
+    .signal-arc-3 { animation: signal-pulse 2.2s ease-in-out infinite; animation-delay: 0.8s; }
+    .signal-arc-4 { animation: signal-pulse 2.2s ease-in-out infinite; animation-delay: 1.2s; }
+    .kt { animation: trail-fade 3s ease-in-out infinite; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="label">ZAKO · First Edition</div>
+  <h1>Ya! — Logo Options</h1>
+  <p>Six distinct directions. <em>Ya</em> — "go" in Bemba.</p>
+</header>
+
+<div class="grid">
+
+  <!-- ═══════════════════════════════
+       LOGO 1: KINETIC
+  ══════════════════════════════════ -->
+  <div class="logo-card">
+    <div class="logo-canvas dark">
+      <svg viewBox="0 0 440 300" xmlns="http://www.w3.org/2000/svg">
+        <!-- Speed trails -->
+        <line x1="12" y1="108" x2="148" y2="108" stroke="#E89420" stroke-width="1.5" class="kt" opacity="0.10"/>
+        <line x1="12" y1="123" x2="162" y2="123" stroke="#E89420" stroke-width="1" class="kt" opacity="0.14" style="animation-delay:0.3s"/>
+        <line x1="12" y1="138" x2="170" y2="138" stroke="#E89420" stroke-width="2" class="kt" opacity="0.18" style="animation-delay:0.6s"/>
+        <line x1="12" y1="153" x2="162" y2="153" stroke="#E89420" stroke-width="1" class="kt" opacity="0.14" style="animation-delay:0.9s"/>
+        <line x1="12" y1="168" x2="148" y2="168" stroke="#E89420" stroke-width="1.5" class="kt" opacity="0.10" style="animation-delay:1.2s"/>
+        <!-- Ya! heavy word -->
+        <text x="145" y="182"
+          font-family="'Bebas Neue', sans-serif"
+          font-size="112"
+          letter-spacing="-2"
+          fill="#E89420">Ya!</text>
+        <!-- Underline rule -->
+        <line x1="145" y1="196" x2="420" y2="196" stroke="#E89420" stroke-width="1" opacity="0.25"/>
+        <!-- Tagline -->
+        <text x="145" y="218"
+          font-family="'Syne', sans-serif"
+          font-size="10.5"
+          letter-spacing="3"
+          fill="#E89420"
+          opacity="0.45">FIRST EDITION · ZAKO</text>
+      </svg>
+    </div>
+    <div class="logo-meta">
+      <div class="logo-num">Option 01</div>
+      <div class="logo-name">Kinetic</div>
+      <div class="logo-desc">Momentum and speed. Speed trails echo the push-forward energy of "go." Clean, aggressive, immediate.</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════
+       LOGO 2: SOVEREIGN STAMP
+  ══════════════════════════════════ -->
+  <div class="logo-card">
+    <div class="logo-canvas dark">
+      <svg viewBox="0 0 440 300" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <path id="top-arc" d="M 90,150 A 110,110 0 0,1 350,150"/>
+          <path id="bot-arc" d="M 114,218 A 110,110 0 0,0 326,218"/>
+        </defs>
+
+        <!-- Outer ring -->
+        <circle cx="220" cy="150" r="124" fill="none" stroke="#E89420" stroke-width="1.5"/>
+        <!-- Dashed ring -->
+        <circle cx="220" cy="150" r="115" fill="none" stroke="#E89420" stroke-width="0.75" stroke-dasharray="3,5" opacity="0.5"/>
+        <!-- Inner ring -->
+        <circle cx="220" cy="150" r="106" fill="none" stroke="#E89420" stroke-width="0.5" opacity="0.3"/>
+
+        <!-- Top arc text -->
+        <text font-family="'Syne', sans-serif" font-size="10.5" letter-spacing="3.5" fill="#E89420" opacity="0.8">
+          <textPath href="#top-arc" startOffset="6%">ZAKO · FIRST EDITION · CAT S22</textPath>
+        </text>
+
+        <!-- Bottom arc text -->
+        <text font-family="'Syne', sans-serif" font-size="10" letter-spacing="3" fill="#E89420" opacity="0.6">
+          <textPath href="#bot-arc" startOffset="14%">SOVEREIGN · 2026</textPath>
+        </text>
+
+        <!-- Diamond separators at 3, 6, 9, 12 o'clock -->
+        <polygon points="220,27 224,34 220,41 216,34" fill="#E89420" opacity="0.6"/>
+        <polygon points="343,150 350,154 343,158 336,154" fill="#E89420" opacity="0.6"/>
+        <polygon points="220,259 224,266 220,273 216,266" fill="#E89420" opacity="0.6"/>
+        <polygon points="97,150 104,154 97,158 90,154" fill="#E89420" opacity="0.6"/>
+
+        <!-- Ya! center -->
+        <text x="220" y="170"
+          font-family="'Bebas Neue', sans-serif"
+          font-size="88"
+          text-anchor="middle"
+          fill="#E89420">Ya!</text>
+      </svg>
+    </div>
+    <div class="logo-meta">
+      <div class="logo-num">Option 02</div>
+      <div class="logo-name">Sovereign Stamp</div>
+      <div class="logo-desc">A certified badge of authority. The circular seal references ZAKO's ledger-based credentialing. Timeless and weighty.</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════
+       LOGO 3: SIGNAL
+  ══════════════════════════════════ -->
+  <div class="logo-card">
+    <div class="logo-canvas dark">
+      <svg viewBox="0 0 440 300" xmlns="http://www.w3.org/2000/svg">
+        <!-- Ya text (without !) -->
+        <text x="48" y="190"
+          font-family="'Bebas Neue', sans-serif"
+          font-size="130"
+          letter-spacing="-3"
+          fill="#E89420">Ya</text>
+
+        <!-- Exclamation bar -->
+        <rect x="302" y="60" width="18" height="86" rx="2" fill="#E89420"/>
+
+        <!-- Exclamation dot = signal origin -->
+        <circle cx="311" cy="175" r="10" fill="#E89420"/>
+
+        <!-- Signal arcs radiating from dot -->
+        <path class="signal-arc-1" d="M 330,175 Q 355,155 355,130 Q 355,105 330,85"
+          fill="none" stroke="#E89420" stroke-width="2" stroke-linecap="round"/>
+        <path class="signal-arc-2" d="M 346,175 Q 380,150 380,118 Q 380,86 346,61"
+          fill="none" stroke="#E89420" stroke-width="2" stroke-linecap="round"/>
+        <path class="signal-arc-3" d="M 363,175 Q 406,145 406,110 Q 406,75 363,45"
+          fill="none" stroke="#E89420" stroke-width="2" stroke-linecap="round"/>
+        <path class="signal-arc-4" d="M 380,175 Q 430,140 430,100 Q 430,60 380,25"
+          fill="none" stroke="#E89420" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+
+        <!-- Baseline rule -->
+        <line x1="48" y1="208" x2="380" y2="208" stroke="#E89420" stroke-width="0.75" opacity="0.2"/>
+        <text x="48" y="226"
+          font-family="'Syne', sans-serif"
+          font-size="10"
+          letter-spacing="3"
+          fill="#E89420"
+          opacity="0.4">TELUX · SOVEREIGN EXCHANGE</text>
+      </svg>
+    </div>
+    <div class="logo-meta">
+      <div class="logo-num">Option 03</div>
+      <div class="logo-name">Signal</div>
+      <div class="logo-desc">The "!" becomes a signal origin point. Radiating arcs reference Telux — exchange across any carrier, in any condition. Animated in digital contexts.</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════
+       LOGO 4: CONSTRUCTED Y
+  ══════════════════════════════════ -->
+  <div class="logo-card">
+    <div class="logo-canvas light">
+      <svg viewBox="0 0 440 300" xmlns="http://www.w3.org/2000/svg">
+        <!-- Geometric Y construction -->
+        <!-- Left arm: diagonal bar going up-left to center -->
+        <polygon points="60,40 96,40 196,148 160,148" fill="#07070A"/>
+        <!-- Right arm: diagonal bar going up-right to center -->
+        <polygon points="344,40 380,40 280,148 244,148" fill="#07070A"/>
+        <!-- Vertical stem -->
+        <rect x="196" y="148" width="48" height="108" fill="#07070A"/>
+
+        <!-- Amber accent: thin line through the Y -->
+        <line x1="76" y1="40" x2="220" y2="162" stroke="#E89420" stroke-width="2.5"/>
+        <line x1="364" y1="40" x2="220" y2="162" stroke="#E89420" stroke-width="2.5"/>
+        <line x1="220" y1="162" x2="220" y2="256" stroke="#E89420" stroke-width="2.5"/>
+
+        <!-- "a!" companion -->
+        <text x="296" y="258"
+          font-family="'DM Serif Display', serif"
+          font-size="64"
+          fill="#07070A"
+          font-style="italic">a!</text>
+
+        <!-- Corner mark -->
+        <rect x="40" y="40" width="8" height="2" fill="#E89420" opacity="0.6"/>
+        <rect x="40" y="40" width="2" height="8" fill="#E89420" opacity="0.6"/>
+        <rect x="392" y="258" width="8" height="2" fill="#E89420" opacity="0.6"/>
+        <rect x="398" y="252" width="2" height="8" fill="#E89420" opacity="0.6"/>
+      </svg>
+    </div>
+    <div class="logo-meta">
+      <div class="logo-num">Option 04</div>
+      <div class="logo-name">Constructed Y</div>
+      <div class="logo-desc">The Y letterform as a geometric construction. Architectural and precise — references ZAKO's structural, protocol-first design. Light variant shown.</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════
+       LOGO 5: FIELD MARKER
+  ══════════════════════════════════ -->
+  <div class="logo-card">
+    <div class="logo-canvas dark">
+      <svg viewBox="0 0 440 300" xmlns="http://www.w3.org/2000/svg">
+        <!-- Octagon (field marker shape) -->
+        <polygon
+          points="160,30 280,30 360,110 360,190 280,270 160,270 80,190 80,110"
+          fill="none"
+          stroke="#E89420"
+          stroke-width="1.5"/>
+        <!-- Inner octagon hairline -->
+        <polygon
+          points="168,44 272,44 344,116 344,184 272,256 168,256 96,184 96,116"
+          fill="none"
+          stroke="#E89420"
+          stroke-width="0.5"
+          opacity="0.3"/>
+
+        <!-- Crosshair lines (horizontal/vertical through center) -->
+        <line x1="80" y1="150" x2="360" y2="150" stroke="#E89420" stroke-width="0.5" opacity="0.2"/>
+        <line x1="220" y1="30" x2="220" y2="270" stroke="#E89420" stroke-width="0.5" opacity="0.2"/>
+
+        <!-- Tick marks at crosshair intersections -->
+        <line x1="80" y1="145" x2="80" y2="155" stroke="#E89420" stroke-width="1.5" opacity="0.7"/>
+        <line x1="360" y1="145" x2="360" y2="155" stroke="#E89420" stroke-width="1.5" opacity="0.7"/>
+        <line x1="215" y1="30" x2="225" y2="30" stroke="#E89420" stroke-width="1.5" opacity="0.7"/>
+        <line x1="215" y1="270" x2="225" y2="270" stroke="#E89420" stroke-width="1.5" opacity="0.7"/>
+
+        <!-- Ya! center text -->
+        <text x="220" y="178"
+          font-family="'Space Mono', monospace"
+          font-size="72"
+          font-weight="700"
+          text-anchor="middle"
+          fill="#E89420">Ya!</text>
+
+        <!-- Coordinates-style labels -->
+        <text x="90" y="44"
+          font-family="'Space Mono', monospace"
+          font-size="8.5"
+          fill="#E89420"
+          opacity="0.45">S22</text>
+        <text x="338" y="265"
+          font-family="'Space Mono', monospace"
+          font-size="8.5"
+          text-anchor="end"
+          fill="#E89420"
+          opacity="0.45">2026</text>
+
+        <!-- Small ZAKO mark -->
+        <text x="220" y="105"
+          font-family="'Syne', sans-serif"
+          font-size="10"
+          font-weight="700"
+          text-anchor="middle"
+          letter-spacing="5"
+          fill="#E89420"
+          opacity="0.5">ZAKO</text>
+      </svg>
+    </div>
+    <div class="logo-meta">
+      <div class="logo-num">Option 05</div>
+      <div class="logo-name">Field Marker</div>
+      <div class="logo-desc">Octagonal shape from navigation and field equipment. Crosshairs reference precision and location. Built for the Cat S22's rugged field use context.</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════
+       LOGO 6: BEMBA CONTRAST
+  ══════════════════════════════════ -->
+  <div class="logo-card">
+    <div class="logo-canvas" style="background: #111118;">
+      <svg viewBox="0 0 440 300" xmlns="http://www.w3.org/2000/svg">
+        <!-- Large amber background block for "!" -->
+        <rect x="318" y="50" width="88" height="200" rx="0" fill="#E89420"/>
+
+        <!-- "Ya" in DM Serif italic — the Bemba word, organic and human -->
+        <text x="44" y="208"
+          font-family="'DM Serif Display', serif"
+          font-size="136"
+          font-style="italic"
+          fill="#F5F0E8">Ya</text>
+
+        <!-- "!" cut from the amber block in dark -->
+        <!-- Amber block exclamation bar -->
+        <rect x="343" y="72" width="38" height="106" rx="3" fill="#07070A"/>
+        <!-- Amber block exclamation dot -->
+        <circle cx="362" cy="214" r="20" fill="#07070A"/>
+
+        <!-- Small Bemba label -->
+        <text x="44" y="248"
+          font-family="'Syne', sans-serif"
+          font-size="9"
+          letter-spacing="3.5"
+          fill="#F5F0E8"
+          opacity="0.35">YA — GO IN BEMBA · ZAKO 2026</text>
+
+        <!-- Left edge mark -->
+        <rect x="30" y="50" width="2" height="198" fill="#E89420" opacity="0.2"/>
+      </svg>
+    </div>
+    <div class="logo-meta">
+      <div class="logo-num">Option 06</div>
+      <div class="logo-name">Bemba Contrast</div>
+      <div class="logo-desc">The human word in italic serif; the "!" as a bold amber block — organic language meets machine precision. The cultural and technological in one mark.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Colour chips row -->
+<div style="margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--rule);">
+  <div style="font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--amber); margin-bottom: 16px;">Colour System</div>
+  <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <div style="width: 32px; height: 32px; background: #E89420; border-radius: 2px;"></div>
+      <div>
+        <div style="font-size: 11px; color: var(--light); font-family: 'Space Mono', monospace;">#E89420</div>
+        <div style="font-size: 10px; color: var(--muted);">Amber — Primary</div>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <div style="width: 32px; height: 32px; background: #07070A; border: 1px solid #222; border-radius: 2px;"></div>
+      <div>
+        <div style="font-size: 11px; color: var(--light); font-family: 'Space Mono', monospace;">#07070A</div>
+        <div style="font-size: 10px; color: var(--muted);">Sovereign Dark</div>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <div style="width: 32px; height: 32px; background: #F5F0E8; border-radius: 2px;"></div>
+      <div>
+        <div style="font-size: 11px; color: var(--light); font-family: 'Space Mono', monospace;">#F5F0E8</div>
+        <div style="font-size: 10px; color: var(--muted);">Off-white</div>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <div style="width: 32px; height: 32px; background: #C87810; border-radius: 2px;"></div>
+      <div>
+        <div style="font-size: 11px; color: var(--light); font-family: 'Space Mono', monospace;">#C87810</div>
+        <div style="font-size: 10px; color: var(--muted);">Amber Dark</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

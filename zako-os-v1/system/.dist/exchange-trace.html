@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZAKO OS — Exchange Protocol Trace</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace; background: #0a0a0f; color: #c0c0d0; min-height: 100vh; overflow-x: hidden; }
+.container { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+
+header { text-align: center; padding: 1.5rem 0; border-bottom: 1px solid #1a1a2e; margin-bottom: 1.5rem; }
+header h1 { font-size: 1.4rem; font-weight: 400; letter-spacing: 0.1em; color: #fff; }
+header .sub { font-size: 0.75rem; color: #5a5a7a; margin-top: 0.3rem; }
+
+.controls { display: flex; justify-content: center; gap: 1rem; margin-bottom: 1.5rem; align-items: center; }
+.btn { background: #1a2a3a; border: 1px solid #2a3a4a; color: #4ecdc4; padding: 0.5rem 1.2rem; border-radius: 0.4rem; cursor: pointer; font-family: inherit; font-size: 0.8rem; transition: all 0.2s; }
+.btn:hover { background: #2a3a4a; border-color: #4ecdc4; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn.active { background: #1a3a2a; border-color: #4ecdc4; }
+.speed-control { display: flex; align-items: center; gap: 0.5rem; font-size: 0.7rem; color: #6a6a8a; }
+.speed-control input { width: 80px; }
+
+.main-grid { display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 1rem; min-height: 70vh; }
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+  <h1>EXCHANGE PROTOCOL TRACE</h1>
+  <div class="sub">BitPads v2.0 · BitLedger v3.0 · Ed25519 · BLAKE3 Chain Hash</div>
+</header>
+
+<div class="controls">
+  <button class="btn" id="btn-start">▶ Send 500 ZMW</button>
+  <button class="btn" id="btn-reset" disabled>↺ Reset</button>
+  <div class="speed-control">
+    <span>Speed:</span>
+    <input type="range" id="speed" min="1" max="10" value="5">
+    <span id="speed-label">1×</span>
+  </div>
+</div>
+
+<div class="main-grid">
+  <!-- Left: Sovereign A -->
+  <div class="device" id="device-a">
+    <div class="device-header">SOVEREIGN A</div>
+    <div class="device-label">did:key:z6MkhaX...gBZDv</div>
+    <div class="device-status" id="status-a">IDLE</div>
+    <div class="device-log" id="log-a"></div>
+  </div>
+
+  <!-- Center: Protocol Trace -->
+  <div class="trace-panel">
+    <div class="trace-header">WIRE TRACE</div>
+    <div class="trace-scroll" id="trace-log"></div>
+  </div>
+
+  <!-- Right: Sovereign B -->
+  <div class="device" id="device-b">
+    <div class="device-header">SOVEREIGN B</div>
+    <div class="device-label">did:key:z6MkqaR...tDkL5</div>
+    <div class="device-status" id="status-b">IDLE</div>
+    <div class="device-log" id="log-b"></div>
+  </div>
+</div>
+
+<!-- Hex dump panel -->
+<div class="hex-panel">
+  <div class="hex-header">FRAME HEX DUMP</div>
+  <div class="hex-content" id="hex-dump">—</div>
+</div>
+
+</div>
+
+<style>
+.device { background: #0d0d18; border: 1px solid #1e1e35; border-radius: 0.75rem; padding: 1rem; display: flex; flex-direction: column; }
+.device-header { font-size: 0.8rem; font-weight: 600; color: #fff; text-align: center; padding-bottom: 0.5rem; border-bottom: 1px solid #1e1e35; }
+.device-label { font-size: 0.6rem; color: #4a4a6a; text-align: center; margin-top: 0.4rem; }
+.device-status { font-size: 0.7rem; text-align: center; margin: 0.75rem 0; padding: 0.3rem; border-radius: 0.3rem; background: #1a1a2e; }
+.device-status.sending { background: #1a2a3a; color: #4ecdc4; }
+.device-status.receiving { background: #2a1a3a; color: #8c4edc; }
+.device-status.verified { background: #1a3a2a; color: #4ecdc4; }
+.device-status.complete { background: #1a3a1a; color: #6ddc4e; }
+.device-log { flex: 1; overflow-y: auto; font-size: 0.65rem; line-height: 1.6; color: #8a8aa0; margin-top: 0.5rem; max-height: 400px; }
+.device-log .entry { margin-bottom: 0.3rem; padding: 0.2rem 0.4rem; border-radius: 0.2rem; }
+.device-log .entry.action { background: #12182a; border-left: 2px solid #4e8cdc; }
+.device-log .entry.crypto { background: #1a1220; border-left: 2px solid #8c4edc; }
+.device-log .entry.success { background: #121a12; border-left: 2px solid #4ecdc4; }
+.device-log .entry.data { background: #1a1a12; border-left: 2px solid #dcac4e; }
+
+.trace-panel { background: #08080f; border: 1px solid #1e1e35; border-radius: 0.75rem; padding: 1rem; display: flex; flex-direction: column; }
+.trace-header { font-size: 0.75rem; font-weight: 600; color: #dcac4e; text-align: center; padding-bottom: 0.5rem; border-bottom: 1px solid #1e1e35; }
+.trace-scroll { flex: 1; overflow-y: auto; font-size: 0.62rem; line-height: 1.7; max-height: 500px; margin-top: 0.5rem; }
+.trace-entry { margin-bottom: 0.5rem; padding: 0.4rem 0.5rem; border-radius: 0.3rem; background: #0d0d1a; border: 1px solid #1a1a2e; }
+.trace-entry .te-phase { color: #dcac4e; font-weight: 600; font-size: 0.68rem; }
+.trace-entry .te-detail { color: #8a8aa0; margin-top: 0.2rem; }
+.trace-entry .te-hex { color: #4ecdc4; font-size: 0.6rem; margin-top: 0.2rem; word-break: break-all; }
+.trace-entry .te-formula { color: #8c4edc; font-style: italic; }
+.trace-entry .te-bit { display: inline-block; width: 1rem; height: 1rem; text-align: center; font-size: 0.55rem; border-radius: 2px; margin: 0 1px; line-height: 1rem; }
+.trace-entry .bit-v { background: #1a3a2a; color: #4ecdc4; }
+.trace-entry .bit-f { background: #2a1a3a; color: #8c4edc; }
+.trace-entry .bit-a { background: #3a2a1a; color: #dcac4e; }
+
+.arrow-right, .arrow-left { text-align: center; padding: 0.5rem; }
+.arrow-right .arrow-line { color: #4ecdc4; animation: pulse-right 1s infinite; }
+.arrow-left .arrow-line { color: #8c4edc; animation: pulse-left 1s infinite; }
+@keyframes pulse-right { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+@keyframes pulse-left { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+.hex-panel { margin-top: 1rem; background: #08080f; border: 1px solid #1e1e35; border-radius: 0.75rem; padding: 1rem; }
+.hex-header { font-size: 0.7rem; color: #6a6a8a; margin-bottom: 0.5rem; }
+.hex-content { font-size: 0.7rem; color: #4ecdc4; word-break: break-all; min-height: 1.5rem; line-height: 1.8; }
+.hex-content .byte { display: inline-block; padding: 0.1rem 0.3rem; margin: 1px; border-radius: 2px; transition: all 0.3s; }
+.hex-content .byte.new { background: #1a3a2a; animation: byte-flash 0.5s; }
+.hex-content .byte.sig { background: #2a1a3a; color: #8c4edc; }
+.hex-content .byte.header { background: #1a2a3a; color: #4e8cdc; }
+@keyframes byte-flash { 0% { background: #4ecdc4; color: #000; } 100% { background: #1a3a2a; } }
+</style>
+
+<script>
+// === ZAKO Exchange Protocol Trace — Full Wire Simulation ===
+
+const ALICE_DID = 'did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK';
+const BOB_DID = 'did:key:z6MkqaRtDkL5faiztiGiC2QtKLGpbnnEGta2doKXgBZDvot';
+const ALICE_SHORT = 'z6MkhaX...gBZDv';
+const BOB_SHORT = 'z6MkqaR...tDkL5';
+
+// Simulated frame data (matching real codec output)
+const VALUE_N = 50000; // 500.00 ZMW (2 decimal places, scaling ×100)
+const SPLIT_S = 8;
+const VALUE_A = Math.floor(VALUE_N / (1 << SPLIT_S)); // 195
+const VALUE_R = VALUE_N % (1 << SPLIT_S); // 80
+const ACCOUNT_PAIR = 0x04; // Op Income / Asset
+const TIMESTAMP = 1750003200; // 2025-06-15 approx
+
+// Layer 3 record bytes (pre-computed to match our codec)
+function encodeLayer3() {
+  let bits = [];
+  // Value N: 25 bits, MSB first
+  for (let i = 24; i >= 0; i--) bits.push((VALUE_N >> i) & 1);
+  // Flags: rounding=0, round_dir=0, split_order=0, direction=1(out), status=0(paid), dc=1(debit), qty=0
+  bits.push(0, 0, 0, 1, 0, 1, 0);
+  // Account pair: 4 bits
+  for (let i = 3; i >= 0; i--) bits.push((ACCOUNT_PAIR >> i) & 1);
+  // Echo: dir=1, status=0, completeness=0, extension=0
+  bits.push(1, 0, 0, 0);
+  // Pack into 5 bytes
+  let bytes = [];
+  for (let i = 0; i < 40; i += 8) {
+    let b = 0;
+    for (let j = 0; j < 8; j++) b = (b << 1) | (bits[i+j] || 0);
+    bytes.push(b);
+  }
+  return bytes;
+}
+
+const LAYER3_BYTES = encodeLayer3();
+const FRAME_HEX = LAYER3_BYTES.map(b => b.toString(16).padStart(2, '0')).join(' ');
+
+// Simulated signature (deterministic-looking)
+const FAKE_SIG = Array.from({length: 64}, (_, i) => (0x3a + i * 7 + i * i) & 0xff);
+const SIG_HEX = FAKE_SIG.slice(0, 8).map(b => b.toString(16).padStart(2, '0')).join(' ') + ' ... [64 bytes]';
+
+// Bus frame: length prefix + payload
+const BUS_FRAME = [0x00, LAYER3_BYTES.length, ...LAYER3_BYTES];
+
+// pads-v1 URL (simulated)
+const PADSURL = '#1pa/1wAAw1AEaAAAAKoAAA';
+
+let running = false;
+let speed = 5;
+let stepTimeout = null;
+
+const traceLog = document.getElementById('trace-log');
+const logA = document.getElementById('log-a');
+const logB = document.getElementById('log-b');
+const statusA = document.getElementById('status-a');
+const statusB = document.getElementById('status-b');
+const hexDump = document.getElementById('hex-dump');
+const btnStart = document.getElementById('btn-start');
+const btnReset = document.getElementById('btn-reset');
+const speedSlider = document.getElementById('speed');
+const speedLabel = document.getElementById('speed-label');
+
+speedSlider.addEventListener('input', () => {
+  speed = parseInt(speedSlider.value);
+  speedLabel.textContent = (speed / 5).toFixed(1) + '×';
+});
+
+function delay(ms) {
+  return new Promise(r => { stepTimeout = setTimeout(r, ms / (speed / 5)); });
+}
+
+function addTrace(phase, detail, hex, formula) {
+  const div = document.createElement('div');
+  div.className = 'trace-entry';
+  let html = `<div class="te-phase">${phase}</div>`;
+  if (detail) html += `<div class="te-detail">${detail}</div>`;
+  if (hex) html += `<div class="te-hex">${hex}</div>`;
+  if (formula) html += `<div class="te-formula">${formula}</div>`;
+  div.innerHTML = html;
+  traceLog.appendChild(div);
+  traceLog.scrollTop = traceLog.scrollHeight;
+}
+
+function addLog(panel, cls, text) {
+  const div = document.createElement('div');
+  div.className = 'entry ' + cls;
+  div.textContent = text;
+  panel.appendChild(div);
+  panel.scrollTop = panel.scrollHeight;
+}
+
+function setHex(bytes, classes) {
+  hexDump.innerHTML = bytes.map((b, i) => {
+    const cls = classes ? (classes[i] || 'new') : 'new';
+    return `<span class="byte ${cls}">${b.toString(16).padStart(2, '0')}</span>`;
+  }).join('');
+}
+
+function setStatus(el, text, cls) {
+  el.textContent = text;
+  el.className = 'device-status ' + (cls || '');
+}
+
+async function runExchange() {
+  running = true;
+  btnStart.disabled = true;
+  btnReset.disabled = true;
+
+  // === PHASE 1: Record Construction (Sovereign A) ===
+  setStatus(statusA, 'CONSTRUCTING RECORD', 'sending');
+  addLog(logA, 'action', '→ Initiating SEND: 500 ZMW to Bob');
+  addTrace('① RECORD CONSTRUCTION', 'Sovereign A builds BitLedger Layer 3 (40-bit transaction record)', null, null);
+  await delay(800);
+
+  // Value encoding
+  addTrace('VALUE ENCODING',
+    `N = ${VALUE_N} (500.00 ZMW × scaling 100)`,
+    null,
+    `N = A × 2^S + r → ${VALUE_N} = ${VALUE_A} × 2^${SPLIT_S} + ${VALUE_R}`);
+  addLog(logA, 'data', `Value: N=${VALUE_N}, A=${VALUE_A}, r=${VALUE_R}, S=${SPLIT_S}`);
+  await delay(600);
+
+  // Bit layout
+  addTrace('BIT LAYOUT (40 bits)',
+    'Bits 1-25: Value N | Bits 26-32: Flags | Bits 33-40: Accounting',
+    `Bits 1-25:  ${VALUE_N.toString(2).padStart(25, '0')} (N=${VALUE_N})\n` +
+    `Bits 26-32: 0001010 (exact, out, paid, debit, no-qty)\n` +
+    `Bits 33-40: 0100 1 0 0 0 (pair=04, echo:dir=1,st=0, complete, no-ext)`,
+    'Cross-layer: bit29(±)=1 echoed at bit37=1 ✓ | bit30(P/F)=0 echoed at bit38=0 ✓');
+  await delay(800);
+
+  // Show frame bytes
+  const frameClasses = Array(5).fill('new');
+  setHex(LAYER3_BYTES, frameClasses);
+  addTrace('FRAME SERIALIZED',
+    '5 bytes (40 bits) packed MSB-first',
+    FRAME_HEX,
+    'Validation: crosslayer_valid=1, rounding_valid=1');
+  addLog(logA, 'data', `Frame: [${FRAME_HEX}]`);
+  await delay(600);
+
+  // === PHASE 2: Signing ===
+  addTrace('② ED25519 SIGNATURE', 'Sign frame with Sovereign A\'s secret key', null, null);
+  setStatus(statusA, 'SIGNING (ed25519)', 'sending');
+  addLog(logA, 'crypto', 'ed25519_sign(frame, sk_alice)');
+  await delay(400);
+
+  addTrace('SIGNATURE COMPUTATION',
+    'SHA-512(seed) → scalar clamp → R = r·B, S = r + H(R‖pk‖msg)·a mod ℓ',
+    `sig[0:8] = ${FAKE_SIG.slice(0,8).map(b=>b.toString(16).padStart(2,'0')).join(' ')}`,
+    '64-byte detached signature (deterministic: same msg+key → same sig)');
+  addLog(logA, 'crypto', `sig = ${SIG_HEX}`);
+  await delay(600);
+
+  // Show full signed frame
+  const fullFrame = [...LAYER3_BYTES, ...FAKE_SIG];
+  const fullClasses = [...Array(5).fill('new'), ...Array(64).fill('sig')];
+  setHex(fullFrame.slice(0, 20), fullClasses.slice(0, 20));
+  addTrace('SIGNED PAYLOAD',
+    `${LAYER3_BYTES.length} bytes frame + 64 bytes sig = ${LAYER3_BYTES.length + 64} bytes total`,
+    null, null);
+  await delay(500);
+
+  // === PHASE 3: Bus Framing ===
+  addTrace('③ BUS FRAMING', 'Length-prefixed wire format for libzako-bus', null, null);
+  addLog(logA, 'action', 'Submit to bus (category: Financial)');
+  await delay(300);
+
+  addTrace('LENGTH PREFIX',
+    `[uint16_t big-endian length][payload] → [00 05][${FRAME_HEX}]`,
+    `00 05 ${FRAME_HEX}`,
+    'Wire total: 2 + 5 = 7 bytes on Unix domain socket');
+  setHex(BUS_FRAME, ['header', 'header', ...Array(5).fill('new')]);
+  await delay(500);
+
+  // === PHASE 4: Transmission ===
+  addTrace('④ TRANSMISSION', 'telux-sharedb selects carrier: SMS (power mode=FULL, peer has SMS endpoint)', null, null);
+  setStatus(statusA, 'TRANSMITTING (SMS)', 'sending');
+  addLog(logA, 'action', `Carrier: SMS → ${BOB_SHORT}`);
+  await delay(400);
+
+  addTrace('PADS-V1 ENCODING',
+    'Frame encoded as compact URL for SMS transport (<300 chars)',
+    PADSURL,
+    `Base64url(flags‖value‖pair‖ts‖sender) = ${PADSURL.length} chars`);
+  addLog(logA, 'data', `pads-v1: ${PADSURL}`);
+  await delay(600);
+
+  addTrace('── FRAME IN FLIGHT ──────────────────────────────', 
+    `A [${ALICE_SHORT}] ─────────────────────► B [${BOB_SHORT}]`,
+    `SMS payload: "${PADSURL}"`, null);
+  await delay(1000);
+
+  // === PHASE 5: Reception (Sovereign B) ===
+  setStatus(statusB, 'RECEIVING', 'receiving');
+  addTrace('⑤ RECEPTION (Sovereign B)', 'telux-sharedb receives SMS, detects #1pa/ prefix', null, null);
+  addLog(logB, 'action', '← Inbound frame from Alice');
+  await delay(500);
+
+  addTrace('PADS-V1 DECODE',
+    `Strip "#1pa/1" prefix → base64url decode → ${LAYER3_BYTES.length + 64} bytes payload`,
+    `Decoded: frame=[${FRAME_HEX}] + sig[64 bytes]`, null);
+  addLog(logB, 'data', `Decoded frame: [${FRAME_HEX}]`);
+  await delay(500);
+
+  // === PHASE 6: Verification ===
+  addTrace('⑥ SIGNATURE VERIFICATION', 'Verify against Alice\'s DID (self-resolving)', null, null);
+  setStatus(statusB, 'VERIFYING SIGNATURE', 'receiving');
+  addLog(logB, 'crypto', `did_to_pubkey("${ALICE_SHORT}")`);
+  await delay(400);
+
+  addTrace('DID RESOLUTION',
+    `"did:key:z..." → strip "did:key:z" → base58btc_decode → strip 0xed01 → 32-byte pubkey`,
+    `pubkey = [ed25519 public key, 32 bytes]`,
+    'No network lookup needed — DID is self-resolving');
+  await delay(400);
+
+  addTrace('ED25519 VERIFY',
+    'crypto_sign_open(sig‖msg, pubkey) → verify R and S against curve equation',
+    null,
+    'Result: SIGNATURE VALID ✓');
+  addLog(logB, 'success', '✓ Signature verified against did:key:z6MkhaX...');
+  setStatus(statusB, 'SIGNATURE VALID ✓', 'verified');
+  await delay(600);
+
+  // === PHASE 7: Record Validation ===
+  addTrace('⑦ BITLEDGER VALIDATION', 'Cross-layer and rounding checks', null, null);
+  addLog(logB, 'action', 'BitLedger Layer 3 decode + validate');
+  await delay(300);
+
+  addTrace('CROSS-LAYER CHECK',
+    `bit29 (direction=1) == bit37 (dir_echo=1) → ✓\nbit30 (status=0) == bit38 (status_echo=0) → ✓`,
+    null,
+    'crosslayer_valid = 1');
+  addTrace('ROUNDING CHECK',
+    'bit26 (rounding=0), bit27 (round_dir=0) → exact value, no invalid combo',
+    null,
+    'rounding_valid = 1 (not bit26=0∧bit27=1)');
+  addLog(logB, 'success', '✓ Record valid: crosslayer OK, rounding OK');
+  await delay(500);
+
+  // === PHASE 8: Ledger Storage ===
+  addTrace('⑧ LEDGER STORAGE', 'Chain hash computation + SQLite append', null, null);
+  addLog(logB, 'action', 'telux-ledgerd: append to chain');
+  await delay(300);
+
+  addTrace('BLAKE3 FRAME HASH',
+    `frame_hash = BLAKE3([${FRAME_HEX}])`,
+    'frame_hash = a7 3c 91 f0 2b ... [32 bytes]',
+    'BLAKE3: 7 rounds, 16-word message schedule, 8-word chaining value');
+  await delay(400);
+
+  addTrace('BLAKE3 CHAIN HASH',
+    'chain_hash = BLAKE3(frame_hash ‖ prev_chain_hash)',
+    'chain_hash = 4e c2 88 d1 07 ... [32 bytes]',
+    'Tamper-evident: modifying any prior record breaks all subsequent chain hashes');
+  addLog(logB, 'data', 'seq=47, chain_hash=4ec288d107...');
+  await delay(400);
+
+  addTrace('SQLITE INSERT',
+    'INSERT INTO records (seq, frame, frame_hash, chain_hash, sender_id, direction, value_n, ...)',
+    null,
+    'WAL mode, synchronous=FULL, fsync before ACK');
+  addLog(logB, 'success', '✓ Record stored: seq=47');
+  await delay(500);
+
+  // === PHASE 9: ACK Response ===
+  addTrace('⑨ ACK RESPONSE', 'Sovereign B constructs ACK record (matching inflow)', null, null);
+  setStatus(statusB, 'CONSTRUCTING ACK', 'sending');
+  addLog(logB, 'action', '→ Constructing ACK: 500 ZMW inflow');
+  await delay(500);
+
+  addTrace('ACK RECORD (Layer 3)',
+    'Value N=50000, direction=IN(0), status=PAID(0), credit(0), pair=Op Income/Asset',
+    '00 00 c3 50 04 08 00 00 00',
+    'Mirror of SEND but direction flipped: OUT→IN for conservation');
+  addLog(logB, 'crypto', 'ed25519_sign(ack_frame, sk_bob)');
+  await delay(400);
+
+  addTrace('── ACK IN FLIGHT ──────────────────────────────',
+    `B [${BOB_SHORT}] ─────────────────────► A [${ALICE_SHORT}]`,
+    'SMS: "#1pa/1wAAw1AAEZ..."', null);
+  setStatus(statusB, 'ACK SENT', 'verified');
+  await delay(800);
+
+  // === PHASE 10: Conservation Check ===
+  setStatus(statusA, 'RECEIVING ACK', 'receiving');
+  addLog(logA, 'action', '← ACK received from Bob');
+  await delay(400);
+
+  addTrace('⑩ CONSERVATION CHECK', 'Exchange Engine: bilateral balance verification', null, null);
+  addLog(logA, 'action', 'Exchange Engine: verify_sig + conservation');
+  await delay(300);
+
+  addTrace('SIGNATURE VERIFY (Bob\'s ACK)',
+    `did_to_pubkey("${BOB_SHORT}") → ed25519_verify(ack, sig, pk_bob)`,
+    null,
+    'Result: SIGNATURE VALID ✓');
+  addLog(logA, 'success', '✓ Bob\'s ACK signature verified');
+  await delay(400);
+
+  addTrace('BILATERAL CONSERVATION',
+    `Local leg:  direction=OUT, value=${VALUE_N} → balance -= ${VALUE_N}\n` +
+    `Remote leg: direction=IN,  value=${VALUE_N} → balance += ${VALUE_N}`,
+    null,
+    `balance = -${VALUE_N} + ${VALUE_N} = 0 → CONSERVED ✓`);
+  addLog(logA, 'success', `✓ Conservation: -${VALUE_N} + ${VALUE_N} = 0`);
+  setStatus(statusA, 'CONSERVATION VERIFIED ✓', 'verified');
+  await delay(600);
+
+  // === PHASE 11: Atomic Post ===
+  addTrace('⑪ ATOMIC DUAL-LEG POST', 'Both records posted together or neither', null, null);
+  addLog(logA, 'action', 'telux-ledgerd: atomic batch post');
+  await delay(300);
+
+  addTrace('BATCH OPEN → INSERT × 2 → CONSERVATION → BATCH CLOSE',
+    'SEND record (out, -500) + RECEIVE record (in, +500) posted atomically',
+    `batch_id=12, records=2, balance=0, conserved=1`,
+    'fsync-before-ACK: both records durable before Exchange Engine confirms');
+  addLog(logA, 'success', '✓ Atomic post: batch_id=12, 2 records, balanced');
+  await delay(500);
+
+  // === PHASE 12: Complete ===
+  addTrace('⑫ EXCHANGE COMPLETE',
+    'State: PENDING_OUTBOUND → COMPLETED',
+    `Exchange #1: Alice→Bob, 500 ZMW, conserved, both chains extended`,
+    null);
+
+  setStatus(statusA, 'EXCHANGE COMPLETE ✓', 'complete');
+  setStatus(statusB, 'EXCHANGE COMPLETE ✓', 'complete');
+  addLog(logA, 'success', '✓ Exchange #1 complete');
+  addLog(logB, 'success', '✓ Exchange #1 complete');
+
+  addTrace('─────────────────────────────────────────────────',
+    '12 protocol phases · 5 cryptographic operations · 2 chain hashes\n' +
+    '2 conservation checks · 1 atomic batch · 69 bytes on wire\n' +
+    'Total: 0 bytes of trust required — DID self-resolves, sig self-verifies',
+    null, null);
+
+  running = false;
+  btnReset.disabled = false;
+}
+
+btnStart.addEventListener('click', () => { runExchange(); });
+btnReset.addEventListener('click', () => {
+  if (stepTimeout) clearTimeout(stepTimeout);
+  running = false;
+  traceLog.innerHTML = '';
+  logA.innerHTML = '';
+  logB.innerHTML = '';
+  hexDump.innerHTML = '—';
+  setStatus(statusA, 'IDLE', '');
+  setStatus(statusB, 'IDLE', '');
+  btnStart.disabled = false;
+  btnReset.disabled = true;
+});
+</script>
+</body>
+</html>

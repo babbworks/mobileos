@@ -1,0 +1,422 @@
+ZAKO: A Sovereign Mobile Operating System
+
+  Article Outline — Comprehensive Long-Form
+
+  PART I: THE PROBLEM
+
+  - 1.1 The Locked Phone
+    - Origin story: Cat S22 Flip locked behind a forgotten PIN
+    - Recovery via stock Android recovery menu — device wiped, clean surface
+    - The question: "What do you put on it?"
+    - A reset phone as a blank canvas for a different premise
+  - 1.2 Every Phone Serves Its Manufacturer
+    - Android's architectural reality: continuous check-in with Google infrastructure
+    - Push notifications via Google servers, signatures against Google keys, location history to distant data centers
+    - Battery drain from maintaining relationships the user did not choose
+    - Apple's more complete integration: the phone as terminal into Apple's services
+    - Neither dishonest — both internally coherent — but built on an unstated premise
+  - 1.3 The Reversed Premise
+    - Contexts where the phone must serve its user, not its manufacturer
+    - Records that belong to the parties, not the platform
+    - Power budgets accountable to mission, not to background sync
+    - A phone in Lusaka. An excavator in Mongolia. A hospital assistant in Lagos. A spacecraft relay.
+    - ZAKO is built for those contexts
+  - 1.4 Writing Was Invented for Ledgers
+    - Cuneiform tablets: grain allocations, debt obligations, livestock transfers
+    - Writing as trust technology across time and distance
+    - The clay token preceded the word
+    - ZAKO as the next such substrate
+
+  ---
+  PART II: LINEAGE — WHAT ZAKO INHERITS
+
+  - 2.1 From Unix: The Composable Small Tool
+    - The Unix philosophy misremembered as CLI preference; actually an architecture doctrine
+    - Small, independently auditable, loosely coupled components
+    - ZAKO: Outstack is a daemon, not a feature; Telux services are separate processes
+    - Graceful degradation in conditions where updates are infrequent and human support unavailable
+  - 2.2 From Plan 9: The Namespace as Fundamental Primitive
+    - Bell Labs, late 1980s: every resource is a file, every process has its own namespace
+    - Plan 9 never achieved commercial success but ideas propagated (Linux namespaces → Docker → Kubernetes)
+    - ZAKO's Island model: Plan 9's namespace doctrine applied to group exchange
+    - Each Island is a constructed namespace, sovereign-defined, auditable by members, opaque to outsiders
+  - 2.3 From seL4: The Capability as Unforgeable Token
+    - Formally verified microkernel; mathematically proven correct
+    - Capability tokens: unforgeable, delegatable, revocable
+    - No ambient authority — no concept of "root" that can do everything
+    - ZAKO: sovereignty as capability system — ed25519 keys backed by hardware, Island membership as signed capability grant
+  - 2.4 From CICS: The Transaction as Substrate
+    - IBM transaction monitors, COBOL, continuous operation since the 1960s
+    - Millions of transactions per second across global banking
+    - Survived 60 years because of the transaction model, not elegance
+    - Every operation commits completely or rolls back, recorded before it executes, durable, reconstructible
+    - ZAKO's exchange ledger aspires to this: not an application concern but an infrastructure property
+
+  ---
+  PART III: THE FIVE FOUNDATIONAL PRINCIPLES
+
+  - 3.1 Every Interaction Is a Record
+    - Payment, task, blood pressure reading, capability grant, power mode transition, journal entry
+    - Each is a BitPads frame, signed by Island Sovereign, chain-hashed against predecessor
+    - Records never deleted — amended by new records that reference and supersede
+    - Conservation principle: something happened → state changed → two sides → both recorded
+  - 3.2 Conservation at the Wire Level
+    - Every quantity record (money, energy, data, time) is a BitLedger record
+    - Conservation invariant enforced at encoding — a batch that doesn't balance cannot be formed
+    - Three independent error detection: CRC-15, cross-layer mirroring, conservation invariant
+    - Not a rule the application must enforce — a structural property of the encoding
+  - 3.3 Sovereignty Is the Design Constraint
+    - Records not on external servers; identity not from third parties; data doesn't leave without explicit sovereign action
+    - ed25519 keys backed by TrustZone hardware
+    - W3C Decentralized Identifiers (did:key method)
+    - Island containers with own security namespace and ledger
+    - Capability grants as the mechanism for any cross-entity access
+  - 3.4 Offline-First Is Non-Negotiable
+    - Full function without network connectivity
+    - Records created locally, stored locally, transmitted when Sovereign chooses
+    - Four transmission channels: SMS (no data connection), QR code (no network at all), Bluetooth LE (short range, very low power), IP (when available)
+  - 3.5 Power Is a Sovereignty Property
+    - A device that cannot control power consumption cannot guarantee availability
+    - Power events are records; power mode transitions are records; the power budget is a ledger
+    - RTG-powered spacecraft discipline applied to terrestrial mobile devices
+
+  ---
+  PART IV: THE THREE-LAYER ARCHITECTURE
+
+  - 4.1 The Bedrock Layer
+    - Hardware and kernel — cannot be overridden by userspace
+    - TrustZone root of trust: ed25519 keys in hardware-isolated execution environment
+    - dm-verity: cryptographic block-level integrity checking of system partitions (runs even in orange state)
+    - Telux-SEC: LSM kernel module enforcing Island boundaries at kernel level
+    - Hardware power domain controller: peripheral power gating as physical fact
+    - "These are physical facts, not policy"
+  - 4.2 The Submerged Layer
+    - Where ZAKO's intelligence lives
+    - Outstack: power governor, process class enforcement, execution gating, five-mode state machine
+    - Telux daemons: telux-ledgerd (append-only ledger), telux-identd (key custodian, signing, capability grants), telux-sharedb (outbound transmission mediation)
+    - Identity service: DID ecosystem for every entity (human, machine, AI, service)
+    - Reads from Bedrock, expresses policy upward
+  - 4.3 The Visible Layer
+    - The surface: group interfaces, exchange queries, telephony, applications, natural language query
+    - Built on AOSP — not because Android is perfect but because it is proven
+    - Runs on existing hardware, mature build infrastructure, auditable without commercial dependency
+    - No Google Mobile Services
+
+  ---
+  PART V: THE PROTOCOL FOUNDATION
+
+  - 5.1 BitPads v2.0: The Meta Layer
+    - Single meta byte declares frame type before receiver processes any payload
+    - Four frame types spanning a cost spectrum from 1 byte to 44 bytes
+    - Pure Signal (1 byte): heartbeat, daemon ACK, power alert
+    - Anonymous Wave (4 bytes): sensor readings, pictography preamble
+    - Full Record (13–29 bytes): work records, journal, health readings
+    - Full BitLedger (22–44+ bytes): payments, exchanges, tallies, capability grants
+  - 5.2 BitLedger v3.0: Conservation Enforced
+    - 40-bit double-entry accounting record — five bytes encode any conserved scalar exchange
+    - Conservation enforced at encoding time — structural property, not validation check
+    - Universal Domain extension: same 40-bit record for energy, mass, data, time, service obligations
+    - Domain declaration in session header — wire format identical, semantic interpretation changes
+  - 5.3 The Enhancement Sub-Protocol
+    - C0 Enhancement Grammar: reclaims structural bits in control characters
+    - Priority, acknowledgement, continuation signalling at 13 declared positions
+    - Binary pictography via shared codebooks at 4 bits per symbol
+  - 5.4 The ZAKO Record Format
+    - Address space: file_sep (0–7), record_sep (0–31), group_sep (0–62), sub_entity (0–31)
+    - Sub-entity partitions: 0–7 Personal, 8–15 System, 16–31 Work
+    - 64 task code verbs across domains (Exchange, Work, Health, Academy, Agreements, etc.)
+    - Session headers, batch boundaries, BELL separators, Tally records
+    - RESTRICT_FORWARD bit: one-bit sovereignty over record propagation
+  - 5.5 The Wire Conventions
+    - Separator encoding in BitLedger fields (account pair → separator, status bits → metadata)
+    - Compound records spanning multiple frames with continuation
+    - BELL before every Tally; Tally must be last in batch; compound cannot span BELL
+    - Ledger storage mapping: SQLite schema for telux-ledgerd
+
+  ---
+  PART VI: OUTSTACK — POWER AS ORGANIZING PRINCIPLE
+
+  - 6.1 Not Power Management — Power Governance
+    - Power management operates at margins; Outstack is the organizing principle of the entire runtime
+    - Every process, service, Island, exchange operation understood in terms of power demands
+    - Spacecraft discipline: RTGs, subsystem power budgets, graceful degradation
+  - 6.2 The Five Modes
+    - FULL (>80% or external power): unrestricted
+    - NORMAL (60–80%): mild eDRX, extended sync intervals
+    - CONSERVE (20–60%): lower-priority Islands suspended, display ceiling lowered
+    - CRITICAL (5–20%): only CRITICAL and INTERACTIVE classes execute; deferred frozen not killed
+    - EMERGENCY (<5%): survival posture, paging-only modem, state recorded to durable storage
+    - Not user-selected profiles — operational states from objective measurement
+  - 6.3 The Five Process Classes
+    - CRITICAL: telux-ledgerd, telux-identd — never suspended
+    - INTERACTIVE: user-facing, share daemon — responsive when active
+    - BACKGROUND: sync, content prefetch, sensor daemon — deferred in conservation
+    - DEFERRED: maintenance, cleanup — frozen in critical
+    - OPPORTUNISTIC: learning engine — only when charging or >70%
+  - 6.4 Execution Gating
+    - At exec() time, Outstack checks power mode permits the process
+    - In EMERGENCY, only CRITICAL-class processes execute
+    - Not a firewall rule — a scheduling primitive
+    - "A 10% battery is a device exercising sovereignty over which processes continue"
+  - 6.5 Power Anomaly as Security Event
+    - 2× budget for 60s → warning
+    - System >20% above ceiling for 120s → anomaly event
+    - Compromised peripheral can be physically power-killed — hardware power gating
+    - Power state included in attestation reports
+    - "A peripheral with no power has no attack surface — not policy, but physics"
+  - 6.6 Thermal Override
+    ▎ 45°C sustained 60s → EMERGENCY
+    - Recovery requires <40°C sustained 120s
+    - Temperature is a power event
+  - 6.7 The Babb Cat Implementation
+    - outstack-powerd daemon: five-mode state machine, 60s battery poll, netlink uevent subscription
+    - cgroup hierarchy for power classes (CPU shares per mode, memory limits, freezer)
+    - Process class assignment via xattr
+    - Lid-close mode trigger: flip close → CONSERVE (form factor gains semantic meaning)
+    - eDRX coordination: AT commands per mode (disabled → 5.12s → 10.24s → 20.48s → 40.96s)
+    - Target: 8mA idle from 1450mAh = 72–108 hour standby
+
+  ---
+  PART VII: TELUX — THE EXCHANGE LAYER
+
+  - 7.1 The Sovereign Network Model
+    - A single device is a complete network
+    - Islands, daemons, sub-entities exchanging signed records
+    - Fractal: same protocol at every scale (record → sub-entity → device → device-to-device → newgroup → distribution)
+  - 7.2 The Daemon Triad
+    - telux-ledgerd (CRITICAL): Append-only ledger, sole source of truth, conservation enforcement, fsync before ACK — always
+    - telux-identd (CRITICAL): Key custodian, DID manager, capability grants, identity lock (refuses signing when screen locked)
+    - telux-sharedb (INTERACTIVE): Outbound transmission, channel selection (SMS, QR, BLE, IP), per-channel formatting
+  - 7.3 Islands and Sovereignty
+    - Six axioms: Primacy, Origin, Creation right, Life/death, Non-interference, Power flows down
+    - Sovereignty declaration: Island ID, Sovereign DID, type, succession rules, constraints, witnesses
+    - Constraint types: MaxGroups, MaxMembers, MaxPower, TimeLimit, GeographicBound, RequireWitness, ProhibitAction, RequireAudit, CannotDelegate
+    - Enforcement tiers: VISIBLE (policy), SUBMERGED (cgroups), BEDROCK (LSM hooks)
+  - 7.4 The newgroup Primitive
+    - Evolution of Linux group: humans, services, APIs, AI models, IoT devices
+    - Dynamic, permanent or temporary
+    - Every member identified by W3C DID
+    - Non-human entities get first-class membership with capabilities, power budgets, auditable records
+  - 7.5 Identity
+    - ed25519 keys backed by Keymaster 4.0 (TrustZone)
+    - W3C DIDs (did:key method, z6Mk prefix)
+    - Chain hash: BLAKE3(frame_hash[n] || chain_hash[n-1])
+    - Genesis anchor: BLAKE3(frame_hash[0] || zeros_32)
+    - Island ID: BASE58URL(BLAKE3(public_key || epoch))
+    - Capability grants as signed delegation, depth-limited (max 3 levels), revocable with cascade
+  - 7.6 The Exchange Ledger
+    - Every transfer between Island members is a ledger entry
+    - Created before operation completes, signed, hashed, chained to predecessors
+    - Cannot be deleted, queryable by authorized parties
+    - Natural language query interface: rule-based FSM for "what did X send to Y", time parsing
+    - Transmission via SMS (pads-v1 URL format <300 chars), QR code, BLE, IP
+
+  ---
+  PART VIII: THE FOUR SERVICES
+
+  - 8.1 PADS Service (Field Records)
+    - Workpads-native structured forms, photos, audio, signoffs
+    - Max 16 active work Islands (sub_entity 16–31)
+    - INTERACTIVE process class for user activity, BACKGROUND for sync
+    - Field notebook that creates ZAKO ledger entries
+  - 8.2 Health Service
+    - Vital signs as conserved quantities (blood pressure, glucose, weight, temperature)
+    - Reproductive and mental health records default RESTRICT_FORWARD=1
+    - Health alerts always INTERACTIVE priority (never deferred by power gating)
+    - Tally mismatches stored with unverified flag rather than rejected
+    - Sensor daemon at BACKGROUND; alert escalation to INTERACTIVE
+  - 8.3 Academy Service (Learning)
+    - Learning records, credentials, competency tracking
+    - XP computed from records — no mutable balance (ledger-native, not gamification database)
+    - Spaced repetition at BACKGROUND, assessment at INTERACTIVE, learning engine at OPPORTUNISTIC
+    - Content delivery via Content Nodes (BLAKE3-addressed, hash-verified, privacy-preserving)
+    - Streak miss policy: absence = break (no grace period by default, distribution-configurable)
+  - 8.4 Agreements Service
+    - Contracts as multi-party sovereign records
+    - PROPOSE → ACCEPT/REJECT/COUNTER → ACTIVE → AMEND/BREACH/COMPLETE → EXPIRE
+    - Hosted Newgroup Ledger Nodes for multi-party agreements
+    - Node countersigning within 2s, total ordering by lamport_ts
+    - Three-step enrollment: CREATE → JOIN → AGREE
+    - Expire records generated automatically by telux-identd
+
+  ---
+  PART IX: THE CODEBOOK AND PICTOGRAPHY
+
+  - 9.1 The Codebook Standard
+    - 64 task code verbs across all domains
+    - Domain declarations: Financial (0x00–0x0F), Work (0x10–0x1F), Health (0x20–0x2F), Academy (0x30–0x3F), Location (0x40–0x4F), Social (0x50–0x5F), Agreements (0x60–0x6F),
+  Schedule (0x70–0x7F)
+    - Quantity types: monetary, energy, mass, data, time, service
+    - Account pair relationships: Source/Sink, Asset/Liability, Equity/Reserve, Revenue/Expense
+  - 9.2 Binary Pictography
+    - 4 bits per symbol, 16 symbols per domain codebook
+    - Core codebook (Category 0x0F): 16 ZAKO-wide symbols (OK, FAIL, WAIT, SEND, RECEIVE, LOCK, UNLOCK, POWER, ALERT, etc.)
+    - 8 domain-specific codebooks (Exchange, Work, Health, Academy, Location, Social, Agreements, Schedule)
+    - Maximum 8 symbols (4 bytes) without intervening structural record
+    - Four-symbol convention: event, cause/context, sub-entity/domain, status/outcome
+    - Context Declaration Wave (4 bytes) switches active codebook
+    - Pure Signal + symbol byte: 2-byte minimum state signal (e.g., CONSERVE+ACK)
+    - ALERT (0xF) from any codebook always promoted to INTERACTIVE — dropping ALERT is protocol violation
+
+  ---
+  PART X: THE REFERENCE HARDWARE — BABB CAT
+
+  - 10.1 The Device: Cat S22 Flip
+    - Qualcomm QM215 (MSM8937): ARM Cortex-A53, 4 cores @ 1.4GHz, Adreno 308 GPU, 28nm
+    - 2GB RAM, 16GB eMMC, 1450mAh battery
+    - Flip form factor: 4" primary display + 1.44" cover display
+    - Ruggedized: IP68, MIL-STD-810H
+    - $99 device — a decade-old, well-documented SoC with vast community knowledge
+  - 10.2 The Boot Chain
+    - PBL (ROM, immutable) → SBL1 (initializes RAM, loads TrustZone) → RPM (power management microcontroller) → aboot/LK (fastboot, verified boot) → Linux kernel 4.9
+    - Everything from aboot's payload onward is replaceable
+    - PBL, SBL1, TrustZone trustlets are cryptographically locked — cannot be replaced
+    - No UEFI ABL, no custom AVB key flash — orange state is the path
+  - 10.3 The Vendor Blob Inventory
+    - ~2,900 files in vendor partition
+    - 56 firmware binaries, 27 HAL implementations
+    - GPU kernel module + userspace EGL/GLES (no open alternative)
+    - QMI modem driver (no open alternative)
+    - Keymaster 4.0 TrustZone trustlet
+    - Discovery: Awinic AW881xx smart amplifier firmware — not in any prior research
+  - 10.4 The Partition Table
+    - A-only (no seamless update slots)
+    - Fixed partitions: sbl1, rpm, tz, aboot, boot (32MB), dtbo (8MB), vbmeta, recovery (32MB), userdata
+    - Dynamic super partition (8.5GB): dm-linear volumes for system, vendor, product
+    - "This one correct number — 32MB not 64MB — is worth significant time"
+  - 10.5 The Cover Display and Lid Sensor
+    - ST7789 SPI-connected cover display (1.44")
+    - Hall effect lid sensor for flip detection
+    - Flip close → CONSERVE power mode (form factor as sovereignty expression)
+    - telux-coverd: time, date, battery bar, Outstack mode, ledger summary, caller ID
+  - 10.6 The T9 Keypad
+    - Physical T9 keypad — not touchscreen input
+    - Multi-tap T9 with extended characters for Zambia languages (Bemba, Nyanja, Tonga, Lozi)
+    - Custom T9 IME: no existing Android T9 handles all required characters
+    - Long-press for extended chars
+
+  ---
+  PART XI: DE-GOOGLING — THE FOUNDING DECISION
+
+  - 11.1 What GMS Is
+    - Play Store, Play Services, Google Maps, Firebase Cloud Messaging, Google Account
+    - Dozens of background processes constituting Google's relationship with the device
+    - Persistent connections reporting to Google infrastructure
+  - 11.2 What GMS Removal Means
+    - Zero GMS packages, zero GMS network traffic (verified by packet capture)
+    - 60–120mW persistent draw eliminated
+    - All data transmission to Google eliminated
+    - Infrastructure dependency eliminated
+  - 11.3 What ZAKO Replaces
+    - Push notifications: FCM → UnifiedPush + ntfy (provider of user's choice, self-hostable)
+    - App distribution: Play Store → F-Droid (open source, auditable, no user data transmitted)
+    - Location: Google FLP → AOSP GPS + Mozilla Location Service
+    - Authentication: Google Account → Telux DID layer
+    - Maps: Google Maps → OpenStreetMap via Organic Maps
+    - Device attestation: SafetyNet/Play Integrity → hardware security module direct attestation
+    - "Every replacement must be more sovereign, not merely different"
+
+  ---
+  PART XII: ZAMBIA — THE DESIGN CENTER
+
+  - 12.1 Why Zambia
+    - Mobile phones are primary computing device
+    - Mobile money is primary financial infrastructure (more accessible than banking)
+    - No existing Android OS built with this context as design center
+    - Google services consume battery, bandwidth, data — all scarce resources
+  - 12.2 Carrier Integration
+    - Three carriers: Airtel, Zamtel, MTN
+    - Pre-configured APNs, MCFG profiles, eDRX targets
+    - Live SIM testing (not emulation) as P0 validation
+    - USSD and STK are mobile money entry points
+  - 12.3 Mobile Money as Primary Use Case
+    - USSD completion → offer ledger recording
+    - ZMW amount detection
+    - STK live validation on all three carriers
+    - Mobile money integration is not optional — it is the primary use case
+  - 12.4 Language and Input
+    - T9 IME with Bemba, Nyanja, Tonga, Lozi support
+    - First-run experience: language selection, timezone, SIM detection, PIN, privacy disclosure
+    - No external account creation required
+
+  ---
+  PART XIII: DISTRIBUTIONS AND INFRASTRUCTURE
+
+  - 13.1 ZAKO Standard vs Distribution
+    - ZAKO OS : Babb Cat :: Linux : Ubuntu
+    - The Standard does not change when hardware changes; what changes is the implementation profile
+    - Distribution checklist and profile template system
+  - 13.2 Infrastructure Roles
+    - Personal Device (baseline): no infrastructure obligations
+    - Relay Node: forwards records without storage, authenticates by DID
+    - Ledger Node: telux-ledgerd equivalent for hosted newgroups, countersigns, provides total ordering
+    - Content Node: CDN for Academy content, BLAKE3-addressed, hash-verified, no DID-content logging
+  - 13.3 Multi-Device Model
+    - Personal device + infrastructure node share sovereign identity context
+    - Delegated signing key (depth 1)
+    - Sync via LAN, BLE, or pads-v1 URL exchange
+    - Produces SEND + RECEIVE pairs for auditable sync history
+  - 13.4 Revenue Sharing
+    - Content delivery fees, credential issuance, managed services recorded on-ledger
+    - Conservation invariant: total fees = sum of outgoing payments + retained balance
+    - BitLedger records for all revenue flows
+
+  ---
+  PART XIV: THE PERFORMANCE CONTRACT
+
+  - 14.1 Adjustability Codes
+    - FIXED: protocol-defined, no implementation may change
+    - DIST: distribution-configurable at build time
+    - DIST+SOV: distribution sets range, Sovereign overrides at runtime
+    - SOV: Sovereign-adjustable within protocol-defined range
+  - 14.2 Key Constants
+    - Mode thresholds: STANDARD_FLOOR 50%, CONSERVE_FLOOR 20%, LOW_FLOOR 10%, SHUTDOWN_FLOOR 3%
+    - Hysteresis band: 3% (prevents flapping)
+    - Sampling intervals: 30s (FULL) to 300s (CRITICAL), 30s (EMERGENCY — fast for survival)
+    - Thermal critical: 45°C sustained 60s → EMERGENCY
+    - Ledger fsync: synchronous before ACK — always, no deferred option
+    - Chain hash: BLAKE3, sovereign signature: ed25519 — both FIXED
+    - Capability revocation: immediate, cascades all delegations
+    - Max pictography sequence: 8 symbols (4 bytes) — FIXED
+
+  ---
+  PART XV: THE OPEN QUESTIONS
+
+  - 15.1 AI Entity Identity
+    - How are LLM instances identified persistently across sessions?
+    - AI entities as first-class Island members with capabilities and power budgets
+  - 15.2 Sovereignty Succession in Degraded Conditions
+    - What happens when Sovereign becomes unreachable in remote deployment?
+    - Six succession types defined but edge cases remain
+  - 15.3 Cross-Island Federation
+    - Federated ledger sync across physical servers not fully specified
+    - WireGuard-based, but protocol details pending
+  - 15.4 VoLTE Provisioning
+    - Zambia carrier response to custom device unknown
+    - Documented as post-release enhancement
+  - 15.5 The Interplanetary Horizon
+    - Same architecture at light-speed latency
+    - Records survive millennia
+    - Autonomous operation without Earth infrastructure
+
+  ---
+  PART XVI: THE CLAIM
+
+  - 16.1 What ZAKO Is Not
+    - Not a hobbyist alternative or a privacy paranoia exercise
+    - Not an argument that the existing ecosystem is wrong for who it currently serves
+  - 16.2 What ZAKO Is
+    - A serious engineering project with serious philosophical foundations
+    - Sovereignty as engineering discipline, not marketing claim
+    - Conservation at the wire level, not the application level
+    - Power governance from aerospace, not from battery-saver settings
+    - Identity from cryptographic first principles, not from platform accounts
+  - 16.3 The Scale
+    - A phone in Lusaka, Zambia
+    - An autonomous excavator in a Mongolian copper mine
+    - A humanoid assistant in a hospital in Lagos
+    - A relay node on a spacecraft between Earth and Mars
+    - The architecture does not change. The deployment profile changes. ZAKO adapts. The sovereignty does not.
+
+Source material: 48 documents across ZAKO/CORE (7), ZAKO/PROTOCOLS (3), ZAKO/SERVICES (4), ZAKO/PACKAGES (4), ZAKO/ACCOUNTING (2), ZAKO/RESEARCH (14), ZAKO/DISTRIBUTIONS (7),
+   ZAKO/OUTPUT (1), CatFlip/briefings (5), CatFlip/project (3).

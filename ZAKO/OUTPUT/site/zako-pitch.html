@@ -1,0 +1,1803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZAKO — Sovereign Network OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #07070A;
+      --bg2:     #0D0D12;
+      --bg3:     #111118;
+      --text:    #EDE8DE;
+      --muted:   #6B6860;
+      --dim:     #2A2A32;
+      --amber:   #E89420;
+      --amber2:  #C87810;
+      --amber-lo: rgba(232,148,32,0.08);
+      --amber-mid: rgba(232,148,32,0.18);
+      --white:   #F5F2EC;
+      --font-display: 'Syne', sans-serif;
+      --font-mono:    'IBM Plex Mono', monospace;
+      --font-body:    'IBM Plex Sans', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-weight: 300;
+      font-size: 16px;
+      line-height: 1.65;
+      overflow-x: hidden;
+    }
+
+    /* ─── NAV DOTS ─── */
+    #nav-dots {
+      position: fixed;
+      right: 28px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--dim);
+      cursor: pointer;
+      transition: background 0.3s, transform 0.3s;
+    }
+    .dot.active { background: var(--amber); transform: scale(1.6); }
+    .dot:hover { background: var(--amber); }
+
+    /* ─── SECTIONS ─── */
+    .page {
+      min-height: 100vh;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      padding: 80px 60px;
+    }
+
+    /* Grid texture overlay */
+    .page::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(232,148,32,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(232,148,32,0.025) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+    }
+
+    /* ─── ANIMATIONS ─── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity 0.8s cubic-bezier(0.22,1,0.36,1), transform 0.8s cubic-bezier(0.22,1,0.36,1);
+    }
+    .reveal.in { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.22s; }
+    .reveal-delay-3 { transition-delay: 0.36s; }
+    .reveal-delay-4 { transition-delay: 0.52s; }
+    .reveal-delay-5 { transition-delay: 0.68s; }
+
+    @keyframes pulse-amber {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+    @keyframes scan {
+      0% { transform: translateY(-100%); }
+      100% { transform: translateY(100%); }
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+    @keyframes chain-flow {
+      0% { stroke-dashoffset: 200; }
+      100% { stroke-dashoffset: 0; }
+    }
+    @keyframes float-up {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    /* ─── TYPOGRAPHY ─── */
+    .display {
+      font-family: var(--font-display);
+      font-weight: 800;
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+    }
+    .label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--amber);
+    }
+    .mono { font-family: var(--font-mono); }
+    .muted { color: var(--muted); }
+    .amber { color: var(--amber); }
+
+    /* ─── PAGE 1: HERO ─── */
+    #p1 {
+      background: var(--bg);
+      align-items: flex-start;
+    }
+    #p1 .bg-word {
+      position: absolute;
+      right: -40px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: clamp(200px, 28vw, 400px);
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(232,148,32,0.08);
+      pointer-events: none;
+      user-select: none;
+      letter-spacing: -0.05em;
+      white-space: nowrap;
+    }
+    #p1 .hero-tag {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: 32px;
+    }
+    #p1 .hero-title {
+      font-size: clamp(80px, 13vw, 180px);
+      color: var(--white);
+      margin-bottom: 24px;
+    }
+    #p1 .hero-sub {
+      font-family: var(--font-body);
+      font-size: clamp(18px, 2.2vw, 26px);
+      font-weight: 300;
+      color: var(--muted);
+      max-width: 560px;
+      line-height: 1.5;
+      margin-bottom: 60px;
+    }
+    #p1 .hero-sub em {
+      color: var(--text);
+      font-style: normal;
+    }
+    #p1 .hero-stats {
+      display: flex;
+      gap: 48px;
+      flex-wrap: wrap;
+    }
+    .stat-item .stat-val {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 28px;
+      color: var(--amber);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .stat-item .stat-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    #p1 .amber-line {
+      position: absolute;
+      bottom: 0; left: 0;
+      width: 100%; height: 1px;
+      background: linear-gradient(90deg, var(--amber) 0%, transparent 60%);
+    }
+    #p1 .cursor {
+      display: inline-block;
+      width: 3px; height: 0.85em;
+      background: var(--amber);
+      margin-left: 6px;
+      vertical-align: middle;
+      animation: blink 1.1s step-end infinite;
+    }
+
+    /* ─── PAGE 2: THE STAKES ─── */
+    #p2 { background: var(--bg2); }
+    #p2 .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+    #p2 .stakes-label {
+      margin-bottom: 20px;
+    }
+    #p2 .stakes-title {
+      font-size: clamp(36px, 5vw, 64px);
+      margin-bottom: 28px;
+      color: var(--white);
+    }
+    #p2 .stakes-body {
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.7;
+      max-width: 480px;
+    }
+    #p2 .stakes-body strong {
+      color: var(--text);
+      font-weight: 400;
+    }
+    .condition-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .condition-list li {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      padding: 16px 20px;
+      border-left: 2px solid var(--dim);
+      color: var(--muted);
+      transition: border-color 0.3s, color 0.3s;
+      position: relative;
+    }
+    .condition-list li .c-head {
+      color: var(--text);
+      display: block;
+      margin-bottom: 4px;
+      font-weight: 500;
+    }
+    .condition-list li.lit {
+      border-color: var(--amber);
+      color: var(--text);
+      background: var(--amber-lo);
+    }
+    .condition-list li .c-dot {
+      position: absolute;
+      left: -5px; top: 20px;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--dim);
+      transition: background 0.3s;
+    }
+    .condition-list li.lit .c-dot { background: var(--amber); }
+
+    /* ─── PAGE 3: TELUX ─── */
+    #p3 { background: var(--bg); }
+    #p3 .telux-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: start;
+    }
+    #p3 .telux-title {
+      font-size: clamp(48px, 7vw, 96px);
+      color: var(--white);
+      margin-bottom: 8px;
+    }
+    #p3 .telux-etym {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 28px;
+    }
+    #p3 .telux-etym span { color: var(--amber); }
+    #p3 .telux-body {
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.75;
+      margin-bottom: 36px;
+    }
+    #p3 .telux-body strong { color: var(--text); font-weight: 400; }
+    .scale-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+    .scale-table th {
+      text-align: left;
+      color: var(--amber);
+      font-weight: 500;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--dim);
+      letter-spacing: 0.15em;
+    }
+    .scale-table td {
+      padding: 12px 12px;
+      border-bottom: 1px solid rgba(42,42,50,0.5);
+      color: var(--muted);
+      vertical-align: top;
+    }
+    .scale-table tr:hover td { color: var(--text); background: var(--amber-lo); }
+    .scale-table td:first-child { color: var(--text); font-weight: 500; }
+    .scale-table td.scope { color: var(--amber); font-size: 11px; }
+
+    /* ─── PAGE 4: OUTSTACK ─── */
+    #p4 { background: var(--bg2); }
+    #p4 .out-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+    .power-bar-wrap {
+      width: 100%;
+    }
+    .power-bar-title {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+    .mode-rows {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .mode-row {
+      display: grid;
+      grid-template-columns: 130px 1fr 60px;
+      gap: 12px;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--dim);
+    }
+    .mode-row .m-name {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+    }
+    .mode-row .m-bar {
+      height: 3px;
+      background: var(--dim);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .mode-row .m-fill {
+      height: 100%;
+      border-radius: 2px;
+      background: var(--amber);
+      width: 0;
+      transition: width 1.2s cubic-bezier(0.22,1,0.36,1);
+    }
+    .mode-row .m-pct {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--amber);
+      text-align: right;
+    }
+    #p4 .out-title {
+      font-size: clamp(42px, 5.5vw, 76px);
+      color: var(--white);
+      margin-bottom: 24px;
+    }
+    #p4 .out-body {
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.75;
+      margin-bottom: 32px;
+    }
+    #p4 .out-body strong { color: var(--text); font-weight: 400; }
+    .process-classes {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .pc-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(42,42,50,0.4);
+    }
+    .pc-row .pc-name {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      color: var(--text);
+      width: 120px;
+    }
+    .pc-row .pc-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--amber);
+      opacity: 0.3;
+      flex-shrink: 0;
+    }
+    .pc-row.active .pc-dot { opacity: 1; }
+    .pc-row .pc-desc {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* ─── PAGE 5: THE LEDGER ─── */
+    #p5 { background: var(--bg); }
+    #p5 .ledger-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+    #p5 .ledger-title {
+      font-size: clamp(42px, 5.5vw, 76px);
+      color: var(--white);
+      margin-bottom: 24px;
+    }
+    #p5 .ledger-body {
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.75;
+      margin-bottom: 32px;
+    }
+    #p5 .ledger-body strong { color: var(--text); font-weight: 400; }
+    .ledger-vis {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      background: var(--bg2);
+      border: 1px solid var(--dim);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .ledger-vis .lv-header {
+      background: var(--dim);
+      padding: 10px 16px;
+      color: var(--amber);
+      letter-spacing: 0.15em;
+      font-size: 10px;
+    }
+    .lv-rows {
+      padding: 8px 0;
+    }
+    .lv-row {
+      display: grid;
+      grid-template-columns: 80px 60px 1fr;
+      padding: 6px 16px;
+      gap: 12px;
+      border-bottom: 1px solid rgba(42,42,50,0.3);
+      transition: background 0.2s;
+      cursor: default;
+    }
+    .lv-row:hover { background: var(--amber-lo); }
+    .lv-row:last-child { border-bottom: none; }
+    .lv-row .lv-hash { color: var(--amber); font-size: 10px; }
+    .lv-row .lv-code { color: var(--muted); }
+    .lv-row .lv-note { color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .lv-append {
+      padding: 10px 16px;
+      color: var(--amber);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      border-top: 1px solid var(--dim);
+    }
+    .lv-append::before {
+      content: '▶ ';
+    }
+    .ledger-props {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 28px;
+    }
+    .lp-item {
+      padding: 16px;
+      border: 1px solid var(--dim);
+      border-radius: 4px;
+    }
+    .lp-item .lp-name {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: 6px;
+    }
+    .lp-item .lp-val {
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    /* ─── PAGE 6: ISLANDS ─── */
+    #p6 { background: var(--bg2); }
+    #p6 .islands-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+    #p6 .islands-title {
+      font-size: clamp(42px, 5.5vw, 76px);
+      color: var(--white);
+      margin-bottom: 24px;
+    }
+    #p6 .islands-body {
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.75;
+      margin-bottom: 32px;
+    }
+    #p6 .islands-body strong { color: var(--text); font-weight: 400; }
+    .island-map {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+    .island-cell {
+      aspect-ratio: 1;
+      background: var(--bg3);
+      border: 1px solid var(--dim);
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px;
+      cursor: default;
+      transition: border-color 0.3s, background 0.3s;
+    }
+    .island-cell:hover {
+      border-color: var(--amber);
+      background: var(--amber-lo);
+    }
+    .island-cell .ic-num {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--amber);
+      opacity: 0.6;
+    }
+    .island-cell .ic-name {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--text);
+      text-align: center;
+      line-height: 1.3;
+    }
+    .island-cell .ic-icon {
+      font-size: 18px;
+      line-height: 1;
+    }
+    .island-cell.reserved {
+      opacity: 0.3;
+    }
+    .island-cell.reserved .ic-name { color: var(--muted); }
+    .sovereignty-note {
+      margin-top: 20px;
+      padding: 16px 20px;
+      border-left: 2px solid var(--amber);
+      background: var(--amber-lo);
+    }
+    .sovereignty-note p {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* ─── PAGE 7: SIMBA ─── */
+    #p7 { background: var(--bg); }
+    #p7 .simba-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+    #p7 .simba-title {
+      font-size: clamp(42px, 5.5vw, 76px);
+      color: var(--white);
+      margin-bottom: 8px;
+    }
+    #p7 .simba-acronym {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      margin-bottom: 28px;
+    }
+    #p7 .simba-acronym span { color: var(--amber); }
+    #p7 .simba-body {
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.75;
+      margin-bottom: 32px;
+    }
+    #p7 .simba-body strong { color: var(--text); font-weight: 400; }
+    .simba-principles {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .sp-item {
+      display: grid;
+      grid-template-columns: 32px 1fr;
+      gap: 16px;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--dim);
+      align-items: start;
+    }
+    .sp-item:last-child { border-bottom: none; }
+    .sp-num {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--amber);
+      padding-top: 2px;
+    }
+    .sp-content .sp-name {
+      font-weight: 400;
+      color: var(--text);
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+    .sp-content .sp-desc {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .manifest-block {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      background: var(--bg2);
+      border: 1px solid var(--dim);
+      border-radius: 4px;
+      padding: 20px;
+      line-height: 1.8;
+    }
+    .mb-comment { color: var(--muted); }
+    .mb-key { color: var(--amber); }
+    .mb-val { color: var(--text); }
+    .mb-str { color: #8BBFA8; }
+
+    /* ─── PAGE 8: ANY CARRIER ─── */
+    #p8 { background: var(--bg2); }
+    #p8 .carrier-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+    #p8 .carrier-title {
+      font-size: clamp(42px, 5.5vw, 76px);
+      color: var(--white);
+      margin-bottom: 24px;
+    }
+    #p8 .carrier-body {
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.75;
+      margin-bottom: 32px;
+    }
+    #p8 .carrier-body strong { color: var(--text); font-weight: 400; }
+    .carrier-stack {
+      position: relative;
+    }
+    .carrier-layer {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 20px;
+      border: 1px solid var(--dim);
+      border-radius: 4px;
+      margin-bottom: 6px;
+      transition: border-color 0.3s, background 0.3s;
+      cursor: default;
+    }
+    .carrier-layer:hover {
+      border-color: var(--amber);
+      background: var(--amber-lo);
+    }
+    .carrier-layer.top {
+      border-color: var(--amber);
+      background: var(--amber-lo);
+    }
+    .cl-icon {
+      font-size: 20px;
+      width: 32px;
+      text-align: center;
+    }
+    .cl-content .cl-name {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+    .cl-content .cl-desc {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--muted);
+    }
+    .carrier-layer.top .cl-content .cl-name { color: var(--amber); }
+    .carrier-arrow {
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--dim);
+      padding: 2px 0;
+    }
+
+    /* ─── PAGE 9: ARCHITECTURE ─── */
+    #p9 { background: var(--bg); }
+    #p9 .arch-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: start;
+    }
+    #p9 .arch-title {
+      font-size: clamp(42px, 5.5vw, 76px);
+      color: var(--white);
+      margin-bottom: 24px;
+    }
+    #p9 .arch-body {
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.75;
+      margin-bottom: 32px;
+    }
+    #p9 .arch-body strong { color: var(--text); font-weight: 400; }
+    .fractal-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .fractal-level {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      position: relative;
+    }
+    .fractal-level::before {
+      content: '';
+      position: absolute;
+      left: 20px;
+      top: 100%;
+      bottom: 0;
+      width: 1px;
+      background: var(--dim);
+    }
+    .fl-indent {
+      display: flex;
+      align-items: center;
+    }
+    .fl-connector {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--dim);
+      padding-right: 8px;
+    }
+    .fl-box {
+      margin: 3px 0;
+      padding: 10px 16px;
+      border: 1px solid var(--dim);
+      border-radius: 3px;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: border-color 0.3s;
+      cursor: default;
+    }
+    .fl-box:hover { border-color: var(--amber); }
+    .fl-box .fl-name {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text);
+      font-weight: 500;
+    }
+    .fl-box .fl-note {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--muted);
+      margin-left: auto;
+    }
+    .fl-box.fl-amber {
+      border-color: var(--amber);
+      background: var(--amber-lo);
+    }
+    .fl-box.fl-amber .fl-name { color: var(--amber); }
+    .arch-props {
+      margin-top: 32px;
+    }
+    .arch-prop {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--dim);
+    }
+    .arch-prop:last-child { border-bottom: none; }
+    .arch-prop .ap-icon {
+      color: var(--amber);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      padding-top: 2px;
+    }
+    .arch-prop .ap-text {
+      font-size: 14px;
+      color: var(--text);
+    }
+    .arch-prop .ap-sub {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    /* ─── PAGE 10: YA! ─── */
+    #p10 {
+      background: var(--bg);
+      align-items: center;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    #p10 .ya-bg {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 60% at 50% 50%,
+        rgba(232,148,32,0.12) 0%,
+        transparent 70%);
+      pointer-events: none;
+    }
+    #p10 .ya-word {
+      position: absolute;
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: clamp(280px, 45vw, 600px);
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(232,148,32,0.06);
+      pointer-events: none;
+      user-select: none;
+      letter-spacing: -0.05em;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      white-space: nowrap;
+    }
+    #p10 .ya-content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #p10 .ya-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: 24px;
+    }
+    #p10 .ya-title {
+      font-size: clamp(100px, 20vw, 240px);
+      color: var(--white);
+      line-height: 0.9;
+      margin-bottom: 16px;
+    }
+    #p10 .ya-sub {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      color: var(--muted);
+      letter-spacing: 0.15em;
+      margin-bottom: 48px;
+    }
+    #p10 .ya-sub span { color: var(--amber); }
+    #p10 .device-name {
+      font-family: var(--font-display);
+      font-size: clamp(18px, 2.5vw, 32px);
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 12px;
+    }
+    #p10 .device-desc {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      max-width: 500px;
+      line-height: 1.8;
+      margin-bottom: 48px;
+    }
+    #p10 .ya-features {
+      display: flex;
+      gap: 40px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .ya-feat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .ya-feat .yf-val {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 22px;
+      color: var(--amber);
+    }
+    .ya-feat .yf-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    #p10 .ya-bemba {
+      margin-top: 60px;
+      padding-top: 40px;
+      border-top: 1px solid var(--dim);
+    }
+    #p10 .ya-bemba p {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+    }
+    #p10 .ya-bemba .bemba-word {
+      font-family: var(--font-display);
+      font-size: 48px;
+      font-weight: 800;
+      color: var(--amber);
+      line-height: 1;
+      margin: 12px 0 6px;
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 900px) {
+      .page { padding: 60px 32px; }
+      #p1 .hero-title { font-size: 64px; }
+      #p1 .bg-word { display: none; }
+      #nav-dots { display: none; }
+      #p2 .grid-2, #p3 .telux-layout, #p4 .out-layout,
+      #p5 .ledger-layout, #p6 .islands-layout, #p7 .simba-layout,
+      #p8 .carrier-layout, #p9 .arch-layout {
+        grid-template-columns: 1fr;
+        gap: 48px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV DOTS -->
+<nav id="nav-dots">
+  <div class="dot active" data-target="p1" title="ZAKO"></div>
+  <div class="dot" data-target="p2" title="The Stakes"></div>
+  <div class="dot" data-target="p3" title="Telux"></div>
+  <div class="dot" data-target="p4" title="Outstack"></div>
+  <div class="dot" data-target="p5" title="The Ledger"></div>
+  <div class="dot" data-target="p6" title="Islands"></div>
+  <div class="dot" data-target="p7" title="SIMBA"></div>
+  <div class="dot" data-target="p8" title="Any Carrier"></div>
+  <div class="dot" data-target="p9" title="Architecture"></div>
+  <div class="dot" data-target="p10" title="Ya!"></div>
+</nav>
+
+<!-- ═══════════════════════════════════════════
+     PAGE 1 — HERO
+═══════════════════════════════════════════ -->
+<section class="page" id="p1">
+  <div class="bg-word">ZAKO</div>
+  <div class="hero-tag reveal">Sovereign Network OS</div>
+  <h1 class="display hero-title reveal reveal-delay-1">ZAKO<span class="cursor"></span></h1>
+  <p class="hero-sub reveal reveal-delay-2">
+    A device is not a node.<br>
+    <em>It is a network.</em>
+  </p>
+  <div class="hero-stats reveal reveal-delay-3">
+    <div class="stat-item">
+      <div class="stat-val">1</div>
+      <div class="stat-label">Protocol at every scale</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val">0</div>
+      <div class="stat-label">External resolvers required</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val">100%</div>
+      <div class="stat-label">Offline-capable</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val">∞</div>
+      <div class="stat-label">Verifiable records</div>
+    </div>
+  </div>
+  <div class="amber-line"></div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     PAGE 2 — THE STAKES
+═══════════════════════════════════════════ -->
+<section class="page" id="p2">
+  <div class="grid-2">
+    <div>
+      <div class="label stakes-label reveal">The Problem</div>
+      <h2 class="display stakes-title reveal reveal-delay-1">Exchange is life.<br>The conditions are not.</h2>
+      <p class="stakes-body reveal reveal-delay-2">
+        The most important exchanges — a payment, a health record, a work assignment, an agreement — happen in the places where infrastructure is least reliable. <strong>Dead zones. Failing batteries. No signal. No cloud.</strong> The world's most critical communications collapse at exactly the moment they matter most.
+      </p>
+      <p class="stakes-body reveal reveal-delay-3">
+        ZAKO is built for those conditions as its baseline. Not as a fallback. Not as a degraded mode. <strong>As the design premise.</strong>
+      </p>
+    </div>
+    <div>
+      <ul class="condition-list reveal reveal-delay-2" id="cond-list">
+        <li data-delay="0">
+          <div class="c-dot"></div>
+          <span class="c-head">No internet. No cloud.</span>
+          Records are written, signed, and chain-hashed locally. No resolver needed. No upload required.
+        </li>
+        <li data-delay="400">
+          <div class="c-dot"></div>
+          <span class="c-head">Battery at 8%.</span>
+          Outstack governs every process. Critical exchange stays alive. Non-essential work suspends.
+        </li>
+        <li data-delay="800">
+          <div class="c-dot"></div>
+          <span class="c-head">SMS only.</span>
+          ZAKO treats SMS, BLE, QR, and IP as roads — not the network. The network is the protocol.
+        </li>
+        <li data-delay="1200">
+          <div class="c-dot"></div>
+          <span class="c-head">Counterparty offline.</span>
+          Peer-to-peer exchange with a shared truth anchor. Sync when available. Verifiable either way.
+        </li>
+        <li data-delay="1600">
+          <div class="c-dot"></div>
+          <span class="c-head">Credentials needed now.</span>
+          Every credential is verifiable against the Sovereign's public key alone. No network call. No authority lookup.
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     PAGE 3 — TELUX
+═══════════════════════════════════════════ -->
+<section class="page" id="p3">
+  <div class="telux-layout">
+    <div>
+      <div class="label reveal">The Exchange Protocol</div>
+      <h2 class="display telux-title reveal reveal-delay-1">Telux</h2>
+      <p class="telux-etym reveal reveal-delay-1"><span>Tel</span> — to communicate. Exchange is the essence of communication.</p>
+      <p class="telux-body reveal reveal-delay-2">
+        Telux is the full-stack exchange system. Identity exists to enable exchange. The ledger exists to make exchange verifiable. Power governance exists because <strong>the most critical exchange must survive the harshest conditions.</strong>
+      </p>
+      <p class="telux-body reveal reveal-delay-3">
+        At every scale — daemon to daemon, peer to peer, device to distribution — the same protocol governs. One record format. One signing model. One truth mechanism. Fractal coherence from the smallest IPC call to cross-network exchange.
+      </p>
+      <p class="telux-body reveal reveal-delay-4" style="color: var(--text);">
+        Telux does not depend on any carrier. It does not require any network to be "the network." <strong>It runs on top of all of them.</strong>
+      </p>
+    </div>
+    <div class="reveal reveal-delay-2">
+      <p class="label" style="margin-bottom: 16px;">Exchange at every scale</p>
+      <table class="scale-table">
+        <thead>
+          <tr>
+            <th>LAYER</th>
+            <th>SCOPE</th>
+            <th>MECHANISM</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Record</td>
+            <td class="scope">sub-entity</td>
+            <td>frame_hash chain · ed25519 sig</td>
+          </tr>
+          <tr>
+            <td>Device</td>
+            <td class="scope">IPC</td>
+            <td>BitPads wire · CRITICAL daemon</td>
+          </tr>
+          <tr>
+            <td>Peer-to-peer</td>
+            <td class="scope">direct</td>
+            <td>shared truth anchor · offline-capable</td>
+          </tr>
+          <tr>
+            <td>Newgroup</td>
+            <td class="scope">collective</td>
+            <td>founding CREATE hash · countersigned</td>
+          </tr>
+          <tr>
+            <td>Distribution</td>
+            <td class="scope">network</td>
+            <td>admitted manifests · ATTEST chain</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style="margin-top: 32px;">
+        <p class="label" style="margin-bottom: 16px;">Core daemon triad</p>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--bg2); border: 1px solid var(--dim); border-radius: 3px;">
+            <span style="font-family: var(--font-mono); font-size: 12px; color: var(--amber); min-width: 130px;">telux-ledgerd</span>
+            <span style="font-family: var(--font-mono); font-size: 10px; color: var(--muted);">append-only ledger · CRITICAL · synchronous fsync</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--bg2); border: 1px solid var(--dim); border-radius: 3px;">
+            <span style="font-family: var(--font-mono); font-size: 12px; color: var(--amber); min-width: 130px;">telux-identd</span>
+            <span style="font-family: var(--font-mono); font-size: 10px; color: var(--muted);">identity · signing · capability grants · CRITICAL</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--bg2); border: 1px solid var(--dim); border-radius: 3px;">
+            <span style="font-family: var(--font-mono); font-size: 12px; color: var(--amber); min-width: 130px;">telux-sharedb</span>
+            <span style="font-family: var(--font-mono); font-size: 10px; color: var(--muted);">selective disclosure · RESTRICT_FORWARD · INTERACTIVE</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     PAGE 4 — OUTSTACK
+═══════════════════════════════════════════ -->
+<section class="page" id="p4">
+  <div class="out-layout">
+    <div>
+      <div class="label reveal">Power Governance</div>
+      <h2 class="display out-title reveal reveal-delay-1">Outstack</h2>
+      <p class="out-body reveal reveal-delay-2">
+        Telux was built to sustain the most critical exchange under the harshest conditions. That goal demanded its own answer: a power governor that treats energy as a ledger and process class as law. <strong>That answer is Outstack.</strong>
+      </p>
+      <p class="out-body reveal reveal-delay-3">
+        When battery drops, Outstack does not randomly throttle. It applies a precise, principled execution matrix. Every process on the device is declared at one of five classes. Every power mode gates a defined tier. <strong>Critical exchange survives what lesser systems cannot.</strong>
+      </p>
+      <div class="reveal reveal-delay-4">
+        <p class="label" style="margin-bottom: 12px;">Process classes</p>
+        <div class="process-classes">
+          <div class="pc-row active">
+            <span class="pc-name">CRITICAL</span>
+            <div class="pc-dot"></div>
+            <span class="pc-desc">Never suspended. Lives in all modes.</span>
+          </div>
+          <div class="pc-row active">
+            <span class="pc-name">INTERACTIVE</span>
+            <div class="pc-dot"></div>
+            <span class="pc-desc">Runs while Sovereign is active.</span>
+          </div>
+          <div class="pc-row">
+            <span class="pc-name">BACKGROUND</span>
+            <div class="pc-dot"></div>
+            <span class="pc-desc">Suspended in Conservation mode.</span>
+          </div>
+          <div class="pc-row">
+            <span class="pc-name">DEFERRED</span>
+            <div class="pc-dot"></div>
+            <span class="pc-desc">Holds until Standard mode returns.</span>
+          </div>
+          <div class="pc-row">
+            <span class="pc-name">OPPORTUNISTIC</span>
+            <div class="pc-dot"></div>
+            <span class="pc-desc">Full Power only. Never scheduled.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="reveal reveal-delay-2">
+      <div class="power-bar-wrap">
+        <p class="power-bar-title">Power modes &amp; battery thresholds</p>
+        <div class="mode-rows" id="mode-rows">
+          <div class="mode-row">
+            <span class="m-name">FULL POWER</span>
+            <div class="m-bar"><div class="m-fill" data-pct="100"></div></div>
+            <span class="m-pct">100%</span>
+          </div>
+          <div class="mode-row">
+            <span class="m-name">STANDARD</span>
+            <div class="m-bar"><div class="m-fill" data-pct="50"></div></div>
+            <span class="m-pct">50%+</span>
+          </div>
+          <div class="mode-row">
+            <span class="m-name">CONSERVATION</span>
+            <div class="m-bar"><div class="m-fill" data-pct="20"></div></div>
+            <span class="m-pct">20%+</span>
+          </div>
+          <div class="mode-row">
+            <span class="m-name">CRITICAL RESERVE</span>
+            <div class="m-bar"><div class="m-fill" data-pct="10"></div></div>
+            <span class="m-pct">10%+</span>
+          </div>
+          <div class="mode-row">
+            <span class="m-name">EMERGENCY</span>
+            <div class="m-bar"><div class="m-fill" data-pct="3"></div></div>
+            <span class="m-pct">3%+</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 36px; padding: 20px; border: 1px solid var(--amber); background: var(--amber-lo); border-radius: 4px;">
+        <p class="label" style="margin-bottom: 12px; color: var(--amber);">The invariant</p>
+        <p style="font-family: var(--font-mono); font-size: 12px; color: var(--text); line-height: 1.8;">
+          In Emergency mode, only CRITICAL processes run.<br>
+          <span style="color: var(--amber);">telux-ledgerd</span> and <span style="color: var(--amber);">telux-identd</span> are always CRITICAL.<br>
+          Payment. Identity. Records. <strong style="color: var(--white);">Always alive.</strong>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     PAGE 5 — THE LEDGER
+═══════════════════════════════════════════ -->
+<section class="page" id="p5">
+  <div class="ledger-layout">
+    <div>
+      <div class="label reveal">Immutable Truth</div>
+      <h2 class="display ledger-title reveal reveal-delay-1">The Ledger</h2>
+      <p class="ledger-body reveal reveal-delay-2">
+        Every meaningful event on a ZAKO device — a payment, a task completed, a health record, a credential earned, a message sent — produces a <strong>signed, chain-hashed record</strong> written to an append-only ledger.
+      </p>
+      <p class="ledger-body reveal reveal-delay-3">
+        Records are never modified. Never deleted. The chain is the proof. A record's validity is verifiable locally, offline, without any external call, using only the Sovereign's public key and the chain hash of the record before it.
+      </p>
+      <div class="ledger-props reveal reveal-delay-4">
+        <div class="lp-item">
+          <div class="lp-name">Hash Algorithm</div>
+          <div class="lp-val">BLAKE3</div>
+        </div>
+        <div class="lp-item">
+          <div class="lp-name">Signing</div>
+          <div class="lp-val">ed25519</div>
+        </div>
+        <div class="lp-item">
+          <div class="lp-name">Write policy</div>
+          <div class="lp-val">fsync before ACK</div>
+        </div>
+        <div class="lp-item">
+          <div class="lp-name">Mutability</div>
+          <div class="lp-val">None. Ever.</div>
+        </div>
+      </div>
+    </div>
+    <div class="reveal reveal-delay-2">
+      <div class="ledger-vis">
+        <div class="lv-header">telux-ledgerd · Personal Island · Exchange sub-entity</div>
+        <div class="lv-rows">
+          <div class="lv-row">
+            <span class="lv-hash">a3f9…c012</span>
+            <span class="lv-code">0x1C PAY</span>
+            <span class="lv-note">Invoice settled · MK 2,400.00</span>
+          </div>
+          <div class="lv-row">
+            <span class="lv-hash">7b2e…d844</span>
+            <span class="lv-code">0x1B INV</span>
+            <span class="lv-note">Invoice issued · Field services</span>
+          </div>
+          <div class="lv-row">
+            <span class="lv-hash">f01c…9a31</span>
+            <span class="lv-code">0x3C LEARN</span>
+            <span class="lv-note">Module complete · ZAKO Admin</span>
+          </div>
+          <div class="lv-row">
+            <span class="lv-hash">2d8a…e67f</span>
+            <span class="lv-code">0x0E ATTEST</span>
+            <span class="lv-note">Credential issued · Field Cert</span>
+          </div>
+          <div class="lv-row">
+            <span class="lv-hash">8c4b…1120</span>
+            <span class="lv-code">0x20 ASSIGN</span>
+            <span class="lv-note">Work task · Site survey, Lusaka</span>
+          </div>
+          <div class="lv-row">
+            <span class="lv-hash">e912…7743</span>
+            <span class="lv-code">0x15 COMMIT</span>
+            <span class="lv-note">Period tally · Week 22 close</span>
+          </div>
+        </div>
+        <div class="lv-append">APPEND ONLY · CHAIN VERIFIED · SIGNED BY SOVEREIGN</div>
+      </div>
+      <div style="margin-top: 20px; padding: 16px 20px; border-left: 2px solid var(--amber); background: var(--amber-lo);">
+        <p style="font-family: var(--font-mono); font-size: 12px; color: var(--text); line-height: 1.7;">
+          frame_hash = BLAKE3(frame_bytes)<br>
+          chain_hash = BLAKE3(frame_hash || prev_chain_hash)<br>
+          <span style="color: var(--muted);">// The chain is the proof. Offline. Always.</span>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     PAGE 6 — ISLANDS
+═══════════════════════════════════════════ -->
+<section class="page" id="p6">
+  <div class="islands-layout">
+    <div>
+      <div class="label reveal">Data Sovereignty</div>
+      <h2 class="display islands-title reveal reveal-delay-1">Islands</h2>
+      <p class="islands-body reveal reveal-delay-2">
+        A Sovereign's data is not a database row owned by a provider. It lives in <strong>sovereign containers</strong> — Islands — each holding a distinct class of life records: exchange, identity, health, work, learning.
+      </p>
+      <p class="islands-body reveal reveal-delay-3">
+        Each Island is a named, access-controlled, cryptographically chained partition of the Sovereign's ledger. The Sovereign controls exactly what is shared with whom, under what conditions, for how long. <strong>No provider can read what the Sovereign has not disclosed.</strong>
+      </p>
+      <p class="islands-body reveal reveal-delay-4">
+        Health records default to RESTRICT_FORWARD. Journal entries are sealed by SELinux policy. Work Islands are scoped to employer relationships. Every boundary is enforced at protocol level — not at the application level.
+      </p>
+      <div class="sovereignty-note reveal reveal-delay-5">
+        <p>Selective disclosure. Per-record. Per-counterparty. Without any platform intermediary. The Sovereign holds the keys — literally.</p>
+      </div>
+    </div>
+    <div class="reveal reveal-delay-2">
+      <p class="label" style="margin-bottom: 16px;">Personal Island — sub-entity map</p>
+      <div class="island-map">
+        <div class="island-cell">
+          <span class="ic-num">sub·0</span>
+          <span class="ic-icon">⇄</span>
+          <span class="ic-name">Exchange</span>
+        </div>
+        <div class="island-cell">
+          <span class="ic-num">sub·1</span>
+          <span class="ic-icon">◈</span>
+          <span class="ic-name">Identity</span>
+        </div>
+        <div class="island-cell">
+          <span class="ic-num">sub·2</span>
+          <span class="ic-icon">◻</span>
+          <span class="ic-name">People</span>
+        </div>
+        <div class="island-cell">
+          <span class="ic-num">sub·3</span>
+          <span class="ic-icon">◆</span>
+          <span class="ic-name">Journal</span>
+        </div>
+        <div class="island-cell">
+          <span class="ic-num">sub·4</span>
+          <span class="ic-icon">♡</span>
+          <span class="ic-name">Health</span>
+        </div>
+        <div class="island-cell">
+          <span class="ic-num">sub·5</span>
+          <span class="ic-icon">◎</span>
+          <span class="ic-name">Academy</span>
+        </div>
+        <div class="island-cell">
+          <span class="ic-num">sub·6</span>
+          <span class="ic-icon">⌂</span>
+          <span class="ic-name">Places</span>
+        </div>
+        <div class="island-cell">
+          <span class="ic-num">sub·7</span>
+          <span class="ic-icon">□</span>
+          <span class="ic-name">Agreements</span>
+        </div>
+        <div class="island-cell reserved">
+          <span class="ic-num">sub·8</span>
+          <span class="ic-name">Reserved</span>
+        </div>
+        <div class="island-cell reserved">
+          <span class="ic-num">sub·9</span>
+          <span class="ic-name">Reserved</span>
+        </div>
+        <div class="island-cell reserved">
+          <span class="ic-num">sub·10</span>
+          <span class="ic-name">Reserved</span>
+        </div>
+        <div class="island-cell reserved">
+          <span class="ic-num">sub·11</span>
+          <span class="ic-name">Reserved</span>
+        </div>
+        <div class="island-cell" style="grid-column: span 4; aspect-ratio: unset; padding: 12px 16px; flex-direction: row; justify-content: flex-start; gap: 16px; border-color: var(--amber); background: var(--amber-lo);">
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--amber);">sub·16–31</span>
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--text);">Work Islands · Up to 16 active employers · PADS service</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     PAGE 7 — SIMBA
+═══════════════════════════════════════════ -->
+<section class="page" id="p7">
+  <div class="simba-layout">
+    <div>
+      <div class="label reveal">Integration Standard</div>
+      <h2 class="display simba-title reveal reveal-delay-1">SIMBA</h2>
+      <p class="simba-acronym reveal reveal-delay-1">
+        <span>S</span>ervice <span>I</span>ntegration for <span>M</span>obile <span>B</span>usiness <span>A</span>pplications
+      </p>
+      <p class="simba-body reveal reveal-delay-2">
+        Inside ZAKO, there is one process model, one record format, one power governor, one design language. A service seeking ZAKO integration <strong>adopts all of them.</strong>
+      </p>
+      <p class="simba-body reveal reveal-delay-3">
+        SIMBA defines the terms. Every admitted service becomes a node on the ZAKO device network — with a declared identity, declared process class, declared record model, and declared network behaviour. <strong>Not a guest. A participant.</strong>
+      </p>
+      <div class="simba-principles reveal reveal-delay-4">
+        <div class="sp-item">
+          <span class="sp-num">01</span>
+          <div class="sp-content">
+            <div class="sp-name">No parallel sovereign data store</div>
+            <div class="sp-desc">Every meaningful event produces a TELUX record. The ledger is the data.</div>
+          </div>
+        </div>
+        <div class="sp-item">
+          <span class="sp-num">02</span>
+          <div class="sp-content">
+            <div class="sp-name">All network calls declared and recorded</div>
+            <div class="sp-desc">No undeclared outbound connection. Every call maps to a ledger record.</div>
+          </div>
+        </div>
+        <div class="sp-item">
+          <span class="sp-num">03</span>
+          <div class="sp-content">
+            <div class="sp-name">Process class is law</div>
+            <div class="sp-desc">Services are suspended by Outstack exactly like native daemons. No exceptions.</div>
+          </div>
+        </div>
+        <div class="sp-item">
+          <span class="sp-num">04</span>
+          <div class="sp-content">
+            <div class="sp-name">RESTRICT_FORWARD is never bypassable</div>
+            <div class="sp-desc">telux-sharedb enforces at write time. No capability grant overrides it.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="reveal reveal-delay-2">
+      <p class="label" style="margin-bottom: 16px;">Service Manifest · excerpt</p>
+      <div class="manifest-block">
+        <span class="mb-comment"># SIMBA Node declaration</span><br><br>
+        <span class="mb-key">service_did:&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="mb-str">did:key:z6Mk…</span><br>
+        <span class="mb-key">service_name:&nbsp;&nbsp;</span><span class="mb-str">"FieldPay Payments"</span><br>
+        <span class="mb-key">simba_version:&nbsp;</span><span class="mb-val">1.0</span><br><br>
+        <span class="mb-key">process_class:&nbsp;</span><span class="mb-val">INTERACTIVE</span><br>
+        <span class="mb-key">suspension_safe:</span><span class="mb-val"> true</span><br><br>
+        <span class="mb-key">capabilities_requested:</span><br>
+        <span class="mb-comment">&nbsp;&nbsp;- scope: read_island</span><br>
+        <span class="mb-comment">&nbsp;&nbsp;&nbsp;&nbsp;island: exchange</span><br>
+        <span class="mb-comment">&nbsp;&nbsp;- scope: write_exchange</span><br><br>
+        <span class="mb-key">record_types_produced:</span><br>
+        <span class="mb-comment">&nbsp;&nbsp;- task_code: 0x1C&nbsp;<span class="mb-comment"># PAY</span></span><br>
+        <span class="mb-comment">&nbsp;&nbsp;- task_code: 0x1B&nbsp;<span class="mb-comment"># INVOICE</span></span><br><br>
+        <span class="mb-key">outbound_connections:</span><br>
+        <span class="mb-comment">&nbsp;&nbsp;- endpoint: api.fieldpay.io</span><br>
+        <span class="mb-comment">&nbsp;&nbsp;&nbsp;&nbsp;offline_capable: true</span>
+      </div>
+      <div style="margin-top: 16px; padding: 14px 16px; border: 1px solid var(--dim); border-radius: 4px; background: var(--bg2);">
+        <p style="font-family: var(--font-mono); font-size: 11px; color: var(--muted); line-height: 1.7;">
+          The manifest is signed by the service provider's DID.<br>
+          The distribution issues an <span style="color: var(--amber);">ATTEST</span> record on admission.<br>
+          Deviation from the manifest after admission is grounds for revocation.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     PAGE 8 — ANY CARRIER
+═══════════════════════════════════════════ -->
+<section class="page" id="p8">
+  <div class="carrier-layout">
+    <div>
+      <div class="label reveal">Offline-First by Design</div>
+      <h2 class="display carrier-title reveal reveal-delay-1">Any network.<br>No network.</h2>
+      <p class="carrier-body reveal reveal-delay-2">
+        ZAKO does not live inside a carrier network. It lives <strong>above all of them.</strong> SMS, Bluetooth, QR, IP — these are roads. ZAKO is the vehicle. The vehicle does not depend on the road to know where it is.
+      </p>
+      <p class="carrier-body reveal reveal-delay-3">
+        Records are written, signed, and chained on-device before any transmission occurs. When connectivity is available, records synchronise. When it isn't, <strong>nothing breaks.</strong> The ledger doesn't wait for the cloud.
+      </p>
+      <p class="carrier-body reveal reveal-delay-4">
+        A payment sent over SMS carries the same verifiable signature as one sent over IP. A credential shared by QR code is as valid as one delivered over a secure API. <strong>The carrier does not confer validity. The signature does.</strong>
+      </p>
+    </div>
+    <div class="reveal reveal-delay-2">
+      <p class="label" style="margin-bottom: 16px;">Network stack model</p>
+      <div class="carrier-stack">
+        <div class="carrier-layer top">
+          <div class="cl-icon">◈</div>
+          <div class="cl-content">
+            <div class="cl-name">ZAKO / Telux Protocol</div>
+            <div class="cl-desc">Sovereign identity · signed records · chain-hash verification</div>
+          </div>
+        </div>
+        <div class="carrier-arrow">runs on top of</div>
+        <div class="carrier-layer">
+          <div class="cl-icon">⌁</div>
+          <div class="cl-content">
+            <div class="cl-name">IP / Mobile Data</div>
+            <div class="cl-desc">When available · preferred for speed · not required</div>
+          </div>
+        </div>
+        <div class="carrier-layer">
+          <div class="cl-icon">✉</div>
+          <div class="cl-content">
+            <div class="cl-name">SMS</div>
+            <div class="cl-desc">BitPads encoded · works on any 2G signal</div>
+          </div>
+        </div>
+        <div class="carrier-layer">
+          <div class="cl-icon">◎</div>
+          <div class="cl-content">
+            <div class="cl-name">Bluetooth LE</div>
+            <div class="cl-desc">Peer-to-peer direct · no infrastructure</div>
+          </div>
+        </div>
+        <div class="carrier-layer">
+          <div class="cl-icon">▣</div>
+          <div class="cl-content">
+            <div class="cl-name">QR Code</div>
+            <div class="cl-desc">Credential presentation · payment initiation · offline</div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top: 24px; padding: 16px 20px; border-left: 2px solid var(--amber); background: var(--amber-lo);">
+        <p style="font-family: var(--font-mono); font-size: 12px; color: var(--text); line-height: 1.7;">
+          The frame format encodes to 13–29 bytes for Full Record frames.<br>
+          A CRC-15 integrity check runs at the wire layer.<br>
+          <span style="color: var(--muted);">// Built for SMS. Built for the edge.</span>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     PAGE 9 — ARCHITECTURE
+═══════════════════════════════════════════ -->
+<section class="page" id="p9">
+  <div class="arch-layout">
+    <div>
+      <div class="label reveal">One System</div>
+      <h2 class="display arch-title reveal reveal-delay-1">Fractal<br>Architecture</h2>
+      <p class="arch-body reveal reveal-delay-2">
+        The same protocol governs exchange at every scale. A record inside the device uses the same signing model as a record between devices. A newgroup uses the same truth anchor as a ledger entry. <strong>No translation layer. No impedance mismatch.</strong>
+      </p>
+      <p class="arch-body reveal reveal-delay-3">
+        A ZAKO device is not a node in a network. It <em>is</em> a network — internally. Every daemon is a participant. Every IPC call is a Telux exchange. The sovereign model doesn't begin at the device boundary. <strong>It begins at the record.</strong>
+      </p>
+      <div class="arch-props reveal reveal-delay-4">
+        <div class="arch-prop">
+          <span class="ap-icon">∞</span>
+          <div>
+            <div class="ap-text">One record format across all scales</div>
+            <div class="ap-sub">BitPads wire protocol · 4 frame types · CRC-15</div>
+          </div>
+        </div>
+        <div class="arch-prop">
+          <span class="ap-icon">◈</span>
+          <div>
+            <div class="ap-text">One identity model</div>
+            <div class="ap-sub">did:key method · ed25519 · self-issued · no registry</div>
+          </div>
+        </div>
+        <div class="arch-prop">
+          <span class="ap-icon">⊞</span>
+          <div>
+            <div class="ap-text">One governance model</div>
+            <div class="ap-sub">Outstack process classes · power modes · suspension protocol</div>
+          </div>
+        </div>
+        <div class="arch-prop">
+          <span class="ap-icon">≡</span>
+          <div>
+            <div class="ap-text">One compliance standard</div>
+            <div class="ap-sub">SIMBA · service admission · manifest · record model</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="reveal reveal-delay-2">
+      <p class="label" style="margin-bottom: 16px;">The fractal stack</p>
+      <div class="fractal-wrap">
+        <div class="fractal-level">
+          <div class="fl-box fl-amber">
+            <span class="fl-name">Distribution</span>
+            <span class="fl-note">SIMBA · ATTEST chains</span>
+          </div>
+        </div>
+        <div style="padding: 2px 0 2px 20px; font-family: var(--font-mono); font-size: 11px; color: var(--dim);">└──</div>
+        <div class="fractal-level">
+          <div class="fl-box">
+            <span class="fl-name">Newgroup</span>
+            <span class="fl-note">founding CREATE hash</span>
+          </div>
+        </div>
+        <div style="padding: 2px 0 2px 40px; font-family: var(--font-mono); font-size: 11px; color: var(--dim);">└──</div>
+        <div class="fractal-level" style="padding-left: 20px;">
+          <div class="fl-box">
+            <span class="fl-name">Device ↔ Device</span>
+            <span class="fl-note">peer exchange · offline-capable</span>
+          </div>
+        </div>
+        <div style="padding: 2px 0 2px 60px; font-family: var(--font-mono); font-size: 11px; color: var(--dim);">└──</div>
+        <div class="fractal-level" style="padding-left: 40px;">
+          <div class="fl-box">
+            <span class="fl-name">Device</span>
+            <span class="fl-note">sovereign network · 3 daemons</span>
+          </div>
+        </div>
+        <div style="padding: 2px 0 2px 80px; font-family: var(--font-mono); font-size: 11px; color: var(--dim);">└──</div>
+        <div class="fractal-level" style="padding-left: 60px;">
+          <div class="fl-box">
+            <span class="fl-name">Island</span>
+            <span class="fl-note">sub-entity · access-controlled</span>
+          </div>
+        </div>
+        <div style="padding: 2px 0 2px 100px; font-family: var(--font-mono); font-size: 11px; color: var(--dim);">└──</div>
+        <div class="fractal-level" style="padding-left: 80px;">
+          <div class="fl-box">
+            <span class="fl-name">Record</span>
+            <span class="fl-note">frame_hash · chain_hash · sig</span>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top: 28px; padding: 20px; background: var(--bg2); border: 1px solid var(--dim); border-radius: 4px;">
+        <p class="label" style="margin-bottom: 12px; color: var(--muted);">Services built on ZAKO</p>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <span style="font-family: var(--font-mono); font-size: 10px; color: var(--text); padding: 5px 10px; border: 1px solid var(--dim); border-radius: 2px;">PADS · Work</span>
+          <span style="font-family: var(--font-mono); font-size: 10px; color: var(--text); padding: 5px 10px; border: 1px solid var(--dim); border-radius: 2px;">Health</span>
+          <span style="font-family: var(--font-mono); font-size: 10px; color: var(--text); padding: 5px 10px; border: 1px solid var(--dim); border-radius: 2px;">Academy</span>
+          <span style="font-family: var(--font-mono); font-size: 10px; color: var(--text); padding: 5px 10px; border: 1px solid var(--dim); border-radius: 2px;">Agreements</span>
+          <span style="font-family: var(--font-mono); font-size: 10px; color: var(--text); padding: 5px 10px; border: 1px solid var(--dim); border-radius: 2px;">Exchange</span>
+          <span style="font-family: var(--font-mono); font-size: 10px; color: var(--amber); padding: 5px 10px; border: 1px solid var(--amber); border-radius: 2px;">+ SIMBA services</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     PAGE 10 — YA!
+═══════════════════════════════════════════ -->
+<section class="page" id="p10">
+  <div class="ya-bg"></div>
+  <div class="ya-word">Ya!</div>
+
+  <div class="ya-content">
+    <p class="ya-label reveal">First Edition · 2026</p>
+    <h2 class="display ya-title reveal reveal-delay-1">Ya!</h2>
+    <p class="ya-sub reveal reveal-delay-2">
+      In Bemba: <span>go</span> · The beginning.
+    </p>
+
+    <p class="device-name reveal reveal-delay-3">ZAKO for Cat S22</p>
+    <p class="device-desc reveal reveal-delay-3">
+      Sovereign Network OS · First Edition<br>
+      Rugged. Offline-first. Built for the field.<br>
+      Every record signed. Every exchange protected.<br>
+      Under any conditions. On any carrier.
+    </p>
+
+    <div class="ya-features reveal reveal-delay-4">
+      <div class="ya-feat">
+        <span class="yf-val">Telux</span>
+        <span class="yf-label">Exchange Protocol</span>
+      </div>
+      <div class="ya-feat">
+        <span class="yf-val">Outstack</span>
+        <span class="yf-label">Power Governance</span>
+      </div>
+      <div class="ya-feat">
+        <span class="yf-val">5</span>
+        <span class="yf-label">Power Modes</span>
+      </div>
+      <div class="ya-feat">
+        <span class="yf-val">8</span>
+        <span class="yf-label">Sovereign Islands</span>
+      </div>
+      <div class="ya-feat">
+        <span class="yf-val">SIMBA</span>
+        <span class="yf-label">Integration Standard</span>
+      </div>
+    </div>
+
+    <div class="ya-bemba reveal reveal-delay-5">
+      <p>First edition of ZAKO</p>
+      <div class="bemba-word">Ya!</div>
+      <p style="color: var(--amber);">Go.</p>
+    </div>
+  </div>
+</section>
+
+<script>
+  // ─── INTERSECTION OBSERVER ───
+  const reveals = document.querySelectorAll('.reveal');
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) e.target.classList.add('in');
+    });
+  }, { threshold: 0.15 });
+  reveals.forEach(el => obs.observe(el));
+
+  // ─── NAV DOTS ───
+  const pages = ['p1','p2','p3','p4','p5','p6','p7','p8','p9','p10'];
+  const dots = document.querySelectorAll('.dot');
+
+  dots.forEach(d => {
+    d.addEventListener('click', () => {
+      document.getElementById(d.dataset.target).scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+  const pageObs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting && e.intersectionRatio > 0.5) {
+        const id = e.target.id;
+        dots.forEach(d => d.classList.remove('active'));
+        const dot = document.querySelector(`.dot[data-target="${id}"]`);
+        if (dot) dot.classList.add('active');
+      }
+    });
+  }, { threshold: 0.5 });
+
+  pages.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) pageObs.observe(el);
+  });
+
+  // ─── POWER BARS ───
+  const barObs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        document.querySelectorAll('.m-fill').forEach(fill => {
+          const pct = fill.dataset.pct;
+          setTimeout(() => { fill.style.width = pct + '%'; }, 300);
+        });
+      }
+    });
+  }, { threshold: 0.3 });
+  const p4 = document.getElementById('p4');
+  if (p4) barObs.observe(p4);
+
+  // ─── CONDITION LIST CYCLING ───
+  const condList = document.getElementById('cond-list');
+  if (condList) {
+    const items = condList.querySelectorAll('li');
+    let current = 0;
+    const cycle = () => {
+      items.forEach(i => i.classList.remove('lit'));
+      items[current].classList.add('lit');
+      current = (current + 1) % items.length;
+    };
+    cycle();
+    setInterval(cycle, 2200);
+  }
+
+  // ─── KEYBOARD NAV ───
+  document.addEventListener('keydown', (e) => {
+    const active = document.querySelector('.dot.active');
+    if (!active) return;
+    const idx = pages.indexOf(active.dataset.target);
+    if (e.key === 'ArrowDown' && idx < pages.length - 1) {
+      document.getElementById(pages[idx + 1]).scrollIntoView({ behavior: 'smooth' });
+    }
+    if (e.key === 'ArrowUp' && idx > 0) {
+      document.getElementById(pages[idx - 1]).scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+</script>
+</body>
+</html>

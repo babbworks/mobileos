@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZAKO OS v1 — System Architecture</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif; background: #0a0a0f; color: #e0e0e0; min-height: 100vh; overflow-x: hidden; }
+
+.container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+header { text-align: center; padding: 3rem 0 2rem; border-bottom: 1px solid #1a1a2e; margin-bottom: 3rem; }
+header h1 { font-size: 2.4rem; font-weight: 300; letter-spacing: 0.15em; color: #fff; margin-bottom: 0.5rem; }
+header .subtitle { color: #6a6a8a; font-size: 0.95rem; letter-spacing: 0.05em; }
+header .stats { margin-top: 1.5rem; display: flex; justify-content: center; gap: 3rem; }
+header .stat { text-align: center; }
+header .stat-value { font-size: 2rem; font-weight: 600; color: #4ecdc4; }
+header .stat-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: #6a6a8a; margin-top: 0.25rem; }
+
+.phase { margin-bottom: 3rem; }
+.phase-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+.phase-number { width: 2.5rem; height: 2.5rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; flex-shrink: 0; }
+.phase-title { font-size: 1.3rem; font-weight: 500; }
+.phase-status { margin-left: auto; font-size: 0.8rem; padding: 0.3rem 0.8rem; border-radius: 1rem; text-transform: uppercase; letter-spacing: 0.05em; }
+
+.phase-1 .phase-number { background: #1a472a; color: #4ecdc4; }
+.phase-2 .phase-number { background: #1a2a47; color: #4e8cdc; }
+.phase-3 .phase-number { background: #2a1a47; color: #8c4edc; }
+.phase-4 .phase-number { background: #47341a; color: #dc8c4e; }
+
+.status-done { background: #1a3a2a; color: #4ecdc4; }
+.status-next { background: #3a2a1a; color: #dcac4e; }
+
+.components { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+.component { background: #12121f; border: 1px solid #1e1e35; border-radius: 0.75rem; padding: 1.25rem; transition: all 0.2s; position: relative; overflow: hidden; }
+.component:hover { border-color: #3a3a5a; transform: translateY(-2px); }
+.component::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+.component.lib::before { background: linear-gradient(90deg, #4ecdc4, #2ea89e); }
+.component.daemon::before { background: linear-gradient(90deg, #4e8cdc, #2e6ab8); }
+.component.engine::before { background: linear-gradient(90deg, #8c4edc, #6a2eb8); }
+.component.pending::before { background: linear-gradient(90deg, #6a6a8a, #4a4a6a); }
+
+.component-name { font-size: 0.95rem; font-weight: 600; color: #fff; margin-bottom: 0.4rem; font-family: 'SF Mono', 'Fira Code', monospace; }
+.component-desc { font-size: 0.8rem; color: #8a8aa0; line-height: 1.4; margin-bottom: 0.75rem; }
+.component-meta { display: flex; justify-content: space-between; align-items: center; }
+.component-tests { font-size: 0.75rem; color: #4ecdc4; font-weight: 500; }
+.component-tests.zero { color: #6a6a8a; }
+.component-badge { font-size: 0.65rem; padding: 0.2rem 0.5rem; border-radius: 0.25rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.badge-lib { background: #1a3a35; color: #4ecdc4; }
+.badge-daemon { background: #1a2a3a; color: #4e8cdc; }
+.badge-engine { background: #2a1a3a; color: #8c4edc; }
+.badge-pending { background: #2a2a2a; color: #6a6a8a; }
+
+.architecture { margin: 3rem 0; padding: 2rem; background: #0d0d18; border: 1px solid #1e1e35; border-radius: 1rem; }
+.architecture h2 { font-size: 1.1rem; font-weight: 500; color: #fff; margin-bottom: 1.5rem; text-align: center; }
+.arch-diagram { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.72rem; line-height: 1.6; color: #8a8aa0; white-space: pre; overflow-x: auto; text-align: center; }
+.arch-diagram .highlight { color: #4ecdc4; }
+.arch-diagram .daemon { color: #4e8cdc; }
+.arch-diagram .engine { color: #8c4edc; }
+
+.wire-format { margin: 3rem 0; padding: 2rem; background: #0d0d18; border: 1px solid #1e1e35; border-radius: 1rem; }
+.wire-format h2 { font-size: 1.1rem; font-weight: 500; color: #fff; margin-bottom: 1rem; }
+.wire-row { display: flex; align-items: center; gap: 0.5rem; margin: 0.75rem 0; font-family: 'SF Mono', monospace; font-size: 0.75rem; }
+.wire-bits { display: flex; gap: 2px; }
+.wire-bit { width: 1.5rem; height: 1.5rem; display: flex; align-items: center; justify-content: center; border-radius: 3px; font-size: 0.6rem; font-weight: 600; }
+.bit-value { background: #1a3a2a; color: #4ecdc4; }
+.bit-flag { background: #2a1a3a; color: #8c4edc; }
+.bit-acct { background: #3a2a1a; color: #dcac4e; }
+.wire-label { color: #6a6a8a; font-size: 0.7rem; margin-left: 0.5rem; }
+
+.power-modes { margin: 3rem 0; }
+.power-modes h2 { font-size: 1.1rem; font-weight: 500; color: #fff; margin-bottom: 1.5rem; }
+.mode-bar { display: flex; border-radius: 0.5rem; overflow: hidden; height: 3rem; margin-bottom: 0.75rem; }
+.mode-segment { display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.05em; transition: all 0.3s; }
+.mode-full { background: #1a4a2a; color: #4ecdc4; flex: 5; }
+.mode-std { background: #1a3a47; color: #4e8cdc; flex: 3; }
+.mode-cons { background: #2a2a47; color: #8c4edc; flex: 2; }
+.mode-crit { background: #3a1a2a; color: #dc4e6a; flex: 1; }
+.mode-emrg { background: #3a0a0a; color: #ff4444; flex: 0.5; }
+.mode-thresholds { display: flex; justify-content: space-between; font-size: 0.7rem; color: #6a6a8a; padding: 0 0.5rem; }
+
+footer { text-align: center; padding: 3rem 0 2rem; border-top: 1px solid #1a1a2e; margin-top: 3rem; color: #4a4a6a; font-size: 0.8rem; }
+footer .copyright { margin-top: 0.5rem; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>ZAKO OS</h1>
+  <div class="subtitle">Sovereign Mobile Operating System — Engineering Status</div>
+  <div class="stats">
+    <div class="stat"><div class="stat-value">12</div><div class="stat-label">Components</div></div>
+    <div class="stat"><div class="stat-value">1,207</div><div class="stat-label">Tests Passing</div></div>
+    <div class="stat"><div class="stat-value">3</div><div class="stat-label">Phases Complete</div></div>
+    <div class="stat"><div class="stat-value">0</div><div class="stat-label">Failures</div></div>
+  </div>
+</header>
+
+<div class="architecture">
+  <h2>System Architecture</h2>
+  <div class="arch-diagram">
+┌─────────────────────────────────────────────────────────────────────┐
+│  <span class="engine">Exchange Engine</span>          <span class="engine">telux-sharedb</span>                              │
+│  bilateral conservation       SMS · IP · BLE · QR                   │
+│  atomic dual-leg posting      power-aware routing                   │
+└─────────────┬─────────────────────┬─────────────────────────────────┘
+              │                     │
+┌─────────────▼─────────────────────▼─────────────────────────────────┐
+│                      <span class="highlight">libzako-bus</span>                                    │
+│           Unix Domain Socket · Poll-Based · Category Routing        │
+└──────┬──────────────────┬──────────────────┬────────────────────────┘
+       │                  │                  │
+┌──────▼──────┐   ┌──────▼──────┐   ┌──────▼──────┐
+│ <span class="daemon">telux-ledgerd</span>│   │ <span class="daemon">telux-identd</span>│   │<span class="daemon">outstack-powerd</span>│
+│ Chain hash   │   │ ed25519 keys │   │ 5-mode FSM  │
+│ SQLite WAL   │   │ DID:key      │   │ Hysteresis   │
+│ Conservation │   │ Capabilities │   │ Thermal OVR  │
+│ fsync-before │   │ Signing svc  │   │ Charge OVR   │
+│ -ACK         │   │ Lock/Unlock  │   │ C0 broadcast │
+└──────┬──────┘   └──────┬──────┘   └──────┬──────┘
+       │                  │                  │
+┌──────▼──────────────────▼──────────────────▼────────────────────────┐
+│                    Foundation Libraries                              │
+│  <span class="highlight">libzako-hash</span>  <span class="highlight">libzako-sign</span>  <span class="highlight">libzako-did</span>  <span class="highlight">libzako-bitpads</span>             │
+│  <span class="highlight">libzako-bitledger</span>  <span class="highlight">libzako-c0</span>  <span class="highlight">libzako-padsurl</span>  <span class="highlight">libzako-pictography</span>  │
+└─────────────────────────────────────────────────────────────────────┘</div>
+</div>
+
+<section class="phase phase-1">
+  <div class="phase-header">
+    <div class="phase-number">1</div>
+    <div class="phase-title">Foundation Libraries</div>
+    <div class="phase-status status-done">Complete · 495 tests</div>
+  </div>
+  <div class="components">
+    <div class="component lib">
+      <div class="component-name">libzako-hash</div>
+      <div class="component-desc">BLAKE3 chain hashing. Frame hash, chain link, genesis anchor computation.</div>
+      <div class="component-meta"><span class="component-tests">21 tests</span><span class="component-badge badge-lib">library</span></div>
+    </div>
+    <div class="component lib">
+      <div class="component-name">libzako-sign</div>
+      <div class="component-desc">Ed25519 signing via TweetNaCl. Keygen, sign, verify, deterministic from seed.</div>
+      <div class="component-meta"><span class="component-tests">23 tests</span><span class="component-badge badge-lib">library</span></div>
+    </div>
+    <div class="component lib">
+      <div class="component-name">libzako-did</div>
+      <div class="component-desc">DID:key method. Base58btc encode/decode, multicodec ed25519 prefix.</div>
+      <div class="component-meta"><span class="component-tests">25 tests</span><span class="component-badge badge-lib">library</span></div>
+    </div>
+    <div class="component lib">
+      <div class="component-name">libzako-bitpads</div>
+      <div class="component-desc">BitPads v2.0 codec. Meta byte, 4 frame types, Layer 1, CRC-15, session layer.</div>
+      <div class="component-meta"><span class="component-tests">259 tests</span><span class="component-badge badge-lib">library</span></div>
+    </div>
+    <div class="component lib">
+      <div class="component-name">libzako-bitledger</div>
+      <div class="component-desc">BitLedger v3.0. 40-bit records, cross-layer validation, conservation invariant.</div>
+      <div class="component-meta"><span class="component-tests">84 tests</span><span class="component-badge badge-lib">library</span></div>
+    </div>
+    <div class="component lib">
+      <div class="component-name">libzako-c0</div>
+      <div class="component-desc">C0 Enhancement Grammar. 32 codes × 8 flag combos, 13 signal slot positions.</div>
+      <div class="component-meta"><span class="component-tests">83 tests</span><span class="component-badge badge-lib">library</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="phase phase-2">
+  <div class="phase-header">
+    <div class="phase-number">2</div>
+    <div class="phase-title">Core Daemons</div>
+    <div class="phase-status status-done">Complete · 425 tests</div>
+  </div>
+  <div class="components">
+    <div class="component lib">
+      <div class="component-name">libzako-bus</div>
+      <div class="component-desc">System bus. Unix domain sockets, poll-based event loop, category routing.</div>
+      <div class="component-meta"><span class="component-tests">49 tests</span><span class="component-badge badge-lib">library</span></div>
+    </div>
+    <div class="component daemon">
+      <div class="component-name">telux-ledgerd</div>
+      <div class="component-desc">Append-only ledger. SQLite WAL, BLAKE3 chain, conservation enforcement, bus shell.</div>
+      <div class="component-meta"><span class="component-tests">121 tests</span><span class="component-badge badge-daemon">daemon</span></div>
+    </div>
+    <div class="component daemon">
+      <div class="component-name">telux-identd</div>
+      <div class="component-desc">Identity daemon. Sovereign keypair, DID management, signing service, capability grants.</div>
+      <div class="component-meta"><span class="component-tests">90 tests</span><span class="component-badge badge-daemon">daemon</span></div>
+    </div>
+    <div class="component daemon">
+      <div class="component-name">outstack-powerd</div>
+      <div class="component-desc">Power governor. 5-mode state machine, thermal/charge override, C0 broadcast, HAL.</div>
+      <div class="component-meta"><span class="component-tests">165 tests</span><span class="component-badge badge-daemon">daemon</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="phase phase-3">
+  <div class="phase-header">
+    <div class="phase-number">3</div>
+    <div class="phase-title">Exchange & Transmission</div>
+    <div class="phase-status status-done">Complete · 287 tests</div>
+  </div>
+  <div class="components">
+    <div class="component lib">
+      <div class="component-name">libzako-padsurl</div>
+      <div class="component-desc">pads-v1 URL codec. Base64url encoding, &lt;300 char URLs for SMS transport.</div>
+      <div class="component-meta"><span class="component-tests">79 tests</span><span class="component-badge badge-lib">library</span></div>
+    </div>
+    <div class="component lib">
+      <div class="component-name">libzako-pictography</div>
+      <div class="component-desc">4-bit symbol codec. 5 codebooks, context declaration waves, ALERT promotion.</div>
+      <div class="component-meta"><span class="component-tests">71 tests</span><span class="component-badge badge-lib">library</span></div>
+    </div>
+    <div class="component engine">
+      <div class="component-name">exchange-engine</div>
+      <div class="component-desc">Bilateral exchange. SEND/RECEIVE cycle, atomic dual-leg posting, conservation.</div>
+      <div class="component-meta"><span class="component-tests">85 tests</span><span class="component-badge badge-engine">engine</span></div>
+    </div>
+    <div class="component engine">
+      <div class="component-name">telux-sharedb</div>
+      <div class="component-desc">Channel abstraction. Outbound queue, carrier selection, power-aware routing.</div>
+      <div class="component-meta"><span class="component-tests">52 tests</span><span class="component-badge badge-engine">engine</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="phase phase-4">
+  <div class="phase-header">
+    <div class="phase-number">4</div>
+    <div class="phase-title">AOSP Integration & Device Bring-Up</div>
+    <div class="phase-status status-next">Awaiting Hardware</div>
+  </div>
+  <div class="components">
+    <div class="component pending">
+      <div class="component-name">AOSP manifest + device tree</div>
+      <div class="component-desc">Repo manifest, BoardConfig.mk, init.rc services, SELinux policy for QM215.</div>
+      <div class="component-meta"><span class="component-tests zero">—</span><span class="component-badge badge-pending">pending</span></div>
+    </div>
+    <div class="component pending">
+      <div class="component-name">Telephony + hardware</div>
+      <div class="component-desc">Voice, SMS, LTE, lid sensor, T9 keypad, cover display on Cat S22 Flip.</div>
+      <div class="component-meta"><span class="component-tests zero">—</span><span class="component-badge badge-pending">pending</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="wire-format">
+  <h2>BitLedger Layer 3 — 40-Bit Transaction Record</h2>
+  <div class="wire-row">
+    <div class="wire-bits">
+      <div class="wire-bit bit-value">N</div><div class="wire-bit bit-value">N</div><div class="wire-bit bit-value">N</div><div class="wire-bit bit-value">N</div><div class="wire-bit bit-value">N</div>
+      <div class="wire-bit bit-value">N</div><div class="wire-bit bit-value">N</div><div class="wire-bit bit-value">N</div><div class="wire-bit bit-value">N</div><div class="wire-bit bit-value">N</div>
+      <div class="wire-bit bit-value">N</div><div class="wire-bit bit-value">N</div><div class="wire-bit bit-value">N</div><div class="wire-bit bit-value">N</div><div class="wire-bit bit-value">N</div>
+      <div class="wire-bit bit-value">N</div><div class="wire-bit bit-value">N</div><div class="wire-bit bit-value">N</div><div class="wire-bit bit-value">N</div><div class="wire-bit bit-value">N</div>
+      <div class="wire-bit bit-value">N</div><div class="wire-bit bit-value">N</div><div class="wire-bit bit-value">N</div><div class="wire-bit bit-value">N</div><div class="wire-bit bit-value">N</div>
+      <div class="wire-bit bit-flag">R</div><div class="wire-bit bit-flag">D</div><div class="wire-bit bit-flag">S</div><div class="wire-bit bit-flag">±</div><div class="wire-bit bit-flag">P</div>
+      <div class="wire-bit bit-flag">DC</div><div class="wire-bit bit-flag">Q</div>
+      <div class="wire-bit bit-acct">A</div><div class="wire-bit bit-acct">A</div><div class="wire-bit bit-acct">A</div><div class="wire-bit bit-acct">A</div>
+      <div class="wire-bit bit-flag">±</div><div class="wire-bit bit-flag">P</div><div class="wire-bit bit-flag">C</div><div class="wire-bit bit-flag">X</div>
+    </div>
+  </div>
+  <div style="display: flex; gap: 2rem; margin-top: 1rem; font-size: 0.72rem; color: #6a6a8a;">
+    <div><span style="color: #4ecdc4;">■</span> Value N (25 bits) = A × 2<sup>S</sup> + r</div>
+    <div><span style="color: #8c4edc;">■</span> Flags (7 bits): Round, Dir, Split, ±, Status, DC, Qty</div>
+    <div><span style="color: #dcac4e;">■</span> Account Pair (4 bits): 14 valid pairs</div>
+  </div>
+</div>
+
+<div class="power-modes">
+  <h2>Outstack Power Modes</h2>
+  <div class="mode-bar">
+    <div class="mode-segment mode-full">FULL</div>
+    <div class="mode-segment mode-std">STD</div>
+    <div class="mode-segment mode-cons">CONS</div>
+    <div class="mode-segment mode-crit">CRIT</div>
+    <div class="mode-segment mode-emrg">!</div>
+  </div>
+  <div class="mode-thresholds">
+    <span>100%</span>
+    <span>50% ↓</span>
+    <span>20% ↓</span>
+    <span>10% ↓</span>
+    <span>3% ↓</span>
+    <span>0%</span>
+  </div>
+  <div style="margin-top: 1.5rem; font-size: 0.8rem; color: #8a8aa0; line-height: 1.7;">
+    <div><strong style="color:#4ecdc4;">FULL</strong> — All 5 process classes active. schedutil governor. All cores.</div>
+    <div><strong style="color:#4e8cdc;">STANDARD</strong> — OPPORTUNISTIC gated. ML inference suspended.</div>
+    <div><strong style="color:#8c4edc;">CONSERVATION</strong> — +BACKGROUND+DEFERRED gated. 1GHz cap. SMS preferred.</div>
+    <div><strong style="color:#dc4e6a;">CRITICAL</strong> — powersave governor. 2 cores. Only CRITICAL + INTERACTIVE.</div>
+    <div><strong style="color:#ff4444;">EMERGENCY</strong> — 1 core, min freq. Only CRITICAL processes. Display emergency-only.</div>
+  </div>
+</div>
+
+<footer>
+  <div>ZAKO OS v1 · C99 · MISRA-C subset · No dynamic allocation in steady-state</div>
+  <div>ASan + UBSan clean · 1,207 tests · Cat S22 Flip (QM215) target</div>
+  <div class="copyright">© 2026 Babb Works · MIT License</div>
+</footer>
+
+</div>
+</body>
+</html>

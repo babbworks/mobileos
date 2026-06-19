@@ -1,0 +1,1549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZAKO Technical Overview v1.0</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --amber:   #B86E00;
+      --amber-bg: #FFF8EE;
+      --amber-border: #E8A84040;
+      --text:    #1A1820;
+      --muted:   #6B6560;
+      --rule:    #D8D4CC;
+      --code-bg: #F5F3EF;
+      --page-bg: #FFFFFF;
+      --font-d:  'Syne', sans-serif;
+      --font-m:  'IBM Plex Mono', monospace;
+      --font-b:  'IBM Plex Sans', sans-serif;
+    }
+
+    @media print {
+      @page {
+        size: A4;
+        margin: 18mm 18mm 16mm 20mm;
+      }
+      body { background: white; }
+      .no-print { display: none !important; }
+      .page {
+        width: 100%;
+        min-height: 0;
+        box-shadow: none;
+        border: none;
+        page-break-after: always;
+        break-after: page;
+        padding: 0;
+        margin: 0;
+      }
+      .page:last-child { page-break-after: avoid; break-after: avoid; }
+      .page-wrap { padding: 0; }
+    }
+
+    body {
+      font-family: var(--font-b);
+      font-weight: 400;
+      font-size: 10pt;
+      color: var(--text);
+      background: #E8E4DC;
+      line-height: 1.55;
+    }
+
+    /* Print button */
+    .no-print {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 999;
+      background: var(--amber);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-family: var(--font-m);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      cursor: pointer;
+      border-radius: 2px;
+    }
+    .no-print:hover { background: #9A5C00; }
+
+    .page-wrap {
+      padding: 32px 0 48px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      background: var(--page-bg);
+      box-shadow: 0 2px 16px rgba(0,0,0,0.15);
+      padding: 20mm 18mm 16mm 20mm;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ─── PAGE HEADER ─── */
+    .ph {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 6pt;
+      border-bottom: 0.75pt solid var(--rule);
+      margin-bottom: 14pt;
+    }
+    .ph-left {
+      font-family: var(--font-m);
+      font-size: 7.5pt;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .ph-left span { color: var(--amber); }
+    .ph-right {
+      font-family: var(--font-m);
+      font-size: 7.5pt;
+      color: var(--muted);
+    }
+
+    /* ─── PAGE FOOTER ─── */
+    .pf {
+      margin-top: auto;
+      padding-top: 8pt;
+      border-top: 0.75pt solid var(--rule);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .pf-left {
+      font-family: var(--font-m);
+      font-size: 7pt;
+      color: var(--muted);
+    }
+    .pf-right {
+      font-family: var(--font-m);
+      font-size: 7pt;
+      color: var(--muted);
+    }
+    .pf-center {
+      font-family: var(--font-m);
+      font-size: 7pt;
+      color: var(--muted);
+    }
+
+    /* ─── TYPOGRAPHY ─── */
+    h1.doc-title {
+      font-family: var(--font-d);
+      font-weight: 800;
+      font-size: 42pt;
+      line-height: 1;
+      letter-spacing: -0.03em;
+      color: var(--text);
+    }
+    h2.section-title {
+      font-family: var(--font-d);
+      font-weight: 700;
+      font-size: 20pt;
+      line-height: 1.1;
+      color: var(--text);
+      margin-bottom: 8pt;
+      letter-spacing: -0.02em;
+    }
+    h3.sub-title {
+      font-family: var(--font-d);
+      font-weight: 600;
+      font-size: 13pt;
+      color: var(--text);
+      margin-bottom: 5pt;
+      margin-top: 11pt;
+      letter-spacing: -0.01em;
+    }
+    h4.mini-title {
+      font-family: var(--font-m);
+      font-weight: 500;
+      font-size: 8pt;
+      color: var(--amber);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 5pt;
+      margin-top: 9pt;
+    }
+    p {
+      margin-bottom: 6pt;
+      font-size: 9.5pt;
+      line-height: 1.6;
+    }
+    .lead {
+      font-size: 11pt;
+      font-weight: 300;
+      line-height: 1.65;
+      color: var(--text);
+      margin-bottom: 10pt;
+    }
+    .label {
+      font-family: var(--font-m);
+      font-size: 7.5pt;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: 4pt;
+    }
+    strong { font-weight: 500; }
+    em { font-style: italic; color: var(--muted); }
+
+    /* ─── CODE ─── */
+    code, .mono {
+      font-family: var(--font-m);
+      font-size: 8.5pt;
+    }
+    pre {
+      background: var(--code-bg);
+      border-left: 2pt solid var(--amber);
+      padding: 8pt 10pt;
+      font-family: var(--font-m);
+      font-size: 8pt;
+      line-height: 1.65;
+      margin: 8pt 0;
+      overflow: hidden;
+      border-radius: 0 2pt 2pt 0;
+    }
+    pre .comment { color: var(--muted); }
+    pre .key { color: var(--amber); }
+    pre .val { color: #1A6B4A; }
+
+    /* ─── TABLES ─── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 8pt 0;
+      font-size: 8.5pt;
+    }
+    thead th {
+      background: var(--code-bg);
+      font-family: var(--font-m);
+      font-weight: 500;
+      font-size: 7.5pt;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--amber);
+      padding: 5pt 8pt;
+      border-bottom: 1pt solid var(--rule);
+      text-align: left;
+    }
+    tbody td {
+      padding: 5pt 8pt;
+      border-bottom: 0.5pt solid var(--rule);
+      vertical-align: top;
+      line-height: 1.45;
+      font-size: 8.5pt;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody td:first-child {
+      font-family: var(--font-m);
+      font-size: 8pt;
+      color: var(--text);
+      white-space: nowrap;
+    }
+    .td-amber { color: var(--amber) !important; font-family: var(--font-m); font-size: 8pt !important; }
+    .td-muted { color: var(--muted); }
+
+    /* ─── CALLOUT BOXES ─── */
+    .callout {
+      background: var(--amber-bg);
+      border-left: 2.5pt solid var(--amber);
+      padding: 8pt 10pt;
+      margin: 8pt 0;
+      border-radius: 0 2pt 2pt 0;
+    }
+    .callout p { margin-bottom: 0; font-size: 9pt; }
+    .callout .callout-label {
+      font-family: var(--font-m);
+      font-size: 7pt;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: 3pt;
+    }
+
+    /* ─── GRID LAYOUTS ─── */
+    .col-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14pt;
+    }
+    .col-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10pt;
+    }
+
+    /* ─── STAT BOXES ─── */
+    .stat-box {
+      padding: 8pt 10pt;
+      border: 0.75pt solid var(--rule);
+      border-radius: 2pt;
+    }
+    .stat-box .sb-val {
+      font-family: var(--font-d);
+      font-weight: 700;
+      font-size: 18pt;
+      color: var(--amber);
+      line-height: 1;
+      margin-bottom: 2pt;
+    }
+    .stat-box .sb-label {
+      font-family: var(--font-m);
+      font-size: 7pt;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* ─── FRACTAL DIAGRAM ─── */
+    .fractal {
+      display: flex;
+      flex-direction: column;
+      gap: 2pt;
+      margin: 8pt 0;
+    }
+    .fl {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+    }
+    .fl-indent {
+      width: 12pt;
+      border-left: 0.75pt solid var(--rule);
+      flex-shrink: 0;
+    }
+    .fl-box {
+      flex: 1;
+      padding: 5pt 8pt;
+      border: 0.75pt solid var(--rule);
+      border-radius: 2pt;
+      display: flex;
+      align-items: center;
+      gap: 8pt;
+    }
+    .fl-box.amber { border-color: var(--amber); background: var(--amber-bg); }
+    .fl-name {
+      font-family: var(--font-m);
+      font-size: 8pt;
+      font-weight: 500;
+      color: var(--text);
+      min-width: 90pt;
+    }
+    .fl-note {
+      font-family: var(--font-m);
+      font-size: 7.5pt;
+      color: var(--muted);
+    }
+    .fl-box.amber .fl-name { color: var(--amber); }
+
+    /* ─── FRAME DIAGRAM ─── */
+    .frame-diagram {
+      display: flex;
+      flex-direction: column;
+      gap: 6pt;
+      margin: 8pt 0;
+    }
+    .frame-row {
+      display: flex;
+      align-items: center;
+      gap: 6pt;
+    }
+    .frame-label {
+      font-family: var(--font-m);
+      font-size: 7.5pt;
+      color: var(--muted);
+      width: 80pt;
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .frame-bytes {
+      display: flex;
+      gap: 2pt;
+    }
+    .byte-cell {
+      width: 22pt;
+      height: 18pt;
+      border: 0.75pt solid var(--rule);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-m);
+      font-size: 7pt;
+      text-align: center;
+      line-height: 1.2;
+      background: var(--code-bg);
+    }
+    .byte-cell.amber { border-color: var(--amber); background: var(--amber-bg); color: var(--amber); }
+    .byte-cell.wide { width: 44pt; }
+    .byte-cell.narrow { width: 13pt; }
+    .byte-count {
+      font-family: var(--font-m);
+      font-size: 7pt;
+      color: var(--muted);
+      align-self: center;
+    }
+
+    /* ─── SECTION NUMBER ─── */
+    .sec-num {
+      font-family: var(--font-m);
+      font-size: 8pt;
+      color: var(--amber);
+      letter-spacing: 0.1em;
+      margin-bottom: 4pt;
+    }
+
+    /* ─── DIVIDER ─── */
+    hr {
+      border: none;
+      border-top: 0.75pt solid var(--rule);
+      margin: 10pt 0;
+    }
+
+    /* ─── TOC ─── */
+    .toc-entry {
+      display: flex;
+      align-items: baseline;
+      gap: 6pt;
+      padding: 4pt 0;
+      border-bottom: 0.5pt dotted var(--rule);
+    }
+    .toc-entry:last-child { border-bottom: none; }
+    .toc-num {
+      font-family: var(--font-m);
+      font-size: 8.5pt;
+      color: var(--amber);
+      min-width: 22pt;
+    }
+    .toc-title {
+      font-size: 9pt;
+      color: var(--text);
+      flex: 1;
+    }
+    .toc-dots {
+      flex: 1;
+      border-bottom: 0.5pt dotted var(--rule);
+      min-width: 20pt;
+    }
+    .toc-page {
+      font-family: var(--font-m);
+      font-size: 8.5pt;
+      color: var(--muted);
+      min-width: 16pt;
+      text-align: right;
+    }
+    .toc-section {
+      font-family: var(--font-m);
+      font-size: 7pt;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin: 10pt 0 4pt;
+    }
+
+    /* ─── COMPLIANCE ROW ─── */
+    .comp-row {
+      display: flex;
+      gap: 6pt;
+      padding: 4pt 0;
+      border-bottom: 0.5pt solid var(--rule);
+      font-size: 8.5pt;
+    }
+    .comp-row:last-child { border-bottom: none; }
+    .comp-num { font-family: var(--font-m); color: var(--amber); min-width: 16pt; }
+    .comp-text { flex: 1; }
+    .comp-code { font-family: var(--font-m); font-size: 7.5pt; color: var(--muted); min-width: 55pt; text-align: right; }
+
+    /* ─── PROCESS CLASS MATRIX ─── */
+    .matrix-table td { text-align: center; font-family: var(--font-m); font-size: 8pt; }
+    .matrix-table td:first-child { text-align: left; }
+    .m-yes { color: #1A6B4A; font-weight: 500; }
+    .m-no { color: #D44; }
+    .m-defer { color: var(--amber); }
+
+    /* ─── ISLAND MAP ─── */
+    .island-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4pt;
+      margin: 8pt 0;
+    }
+    .island-cell {
+      padding: 6pt 5pt;
+      border: 0.75pt solid var(--rule);
+      border-radius: 2pt;
+      text-align: center;
+    }
+    .island-cell.active { border-color: var(--amber); background: var(--amber-bg); }
+    .island-cell.reserved { opacity: 0.45; }
+    .island-cell .ic-num { font-family: var(--font-m); font-size: 7pt; color: var(--amber); }
+    .island-cell .ic-name { font-size: 8pt; color: var(--text); margin-top: 2pt; }
+    .island-cell.active .ic-name { color: var(--amber); font-weight: 500; }
+
+    /* Page 1: Title page special layout */
+    #pg1 { justify-content: space-between; }
+    #pg1 .title-top { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+    #pg1 .title-bottom { }
+  </style>
+</head>
+<body>
+
+<button class="no-print" onclick="window.print()">PRINT / SAVE PDF</button>
+
+<div class="page-wrap">
+
+<!-- ═══════════════════════════
+     PAGE 1 — TITLE
+════════════════════════════ -->
+<div class="page" id="pg1">
+  <div style="border-bottom: 0.75pt solid var(--rule); padding-bottom: 10pt; margin-bottom: 20pt; display: flex; justify-content: space-between; align-items: center;">
+    <span style="font-family: var(--font-d); font-weight: 800; font-size: 14pt; color: var(--amber); letter-spacing: -0.02em;">ZAKO</span>
+    <span style="font-family: var(--font-m); font-size: 7.5pt; color: var(--muted);">CONFIDENTIAL TECHNICAL DOCUMENT</span>
+  </div>
+
+  <div class="title-top">
+    <div style="margin-bottom: 10pt;">
+      <div class="label">Technical Overview</div>
+    </div>
+    <h1 class="doc-title" style="margin-bottom: 12pt;">ZAKO<br>Sovereign<br>Network OS</h1>
+    <p class="lead" style="max-width: 120mm; color: var(--muted);">
+      A complete technical reference for the ZAKO Standard — the full-stack sovereign exchange system governing identity, ledger, power, services, and integration across any carrier network.
+    </p>
+
+    <div style="margin-top: 20pt; padding: 10pt 12pt; background: var(--code-bg); border-radius: 2pt; display: inline-block;">
+      <p style="font-family: var(--font-m); font-size: 8pt; color: var(--muted); margin: 0; line-height: 1.8;">
+        <strong style="color: var(--text);">Document:</strong>&nbsp; ZAKO-TECH-OVERVIEW-v1<br>
+        <strong style="color: var(--text);">Protocol:</strong>&nbsp; ZAKO Standard v1.x · Telux v1.0 · Outstack v1.0<br>
+        <strong style="color: var(--text);">Status:</strong>&nbsp;&nbsp;&nbsp; Normative reference<br>
+        <strong style="color: var(--text);">Date:</strong>&nbsp;&nbsp;&nbsp;&nbsp; June 1, 2026<br>
+        <strong style="color: var(--text);">Edition:</strong>&nbsp;&nbsp; Ya! — First Edition (Cat S22)
+      </p>
+    </div>
+  </div>
+
+  <div class="title-bottom">
+    <div style="margin-bottom: 14pt; padding-top: 14pt; border-top: 0.75pt solid var(--rule);">
+      <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8pt;">
+        <div class="stat-box">
+          <div class="sb-val">5</div>
+          <div class="sb-label">Power Modes</div>
+        </div>
+        <div class="stat-box">
+          <div class="sb-val">5</div>
+          <div class="sb-label">Process Classes</div>
+        </div>
+        <div class="stat-box">
+          <div class="sb-val">8</div>
+          <div class="sb-label">Sovereign Islands</div>
+        </div>
+        <div class="stat-box">
+          <div class="sb-val">4</div>
+          <div class="sb-label">Frame Types</div>
+        </div>
+        <div class="stat-box">
+          <div class="sb-val">0</div>
+          <div class="sb-label">External Resolvers</div>
+        </div>
+      </div>
+    </div>
+    <div class="pf">
+      <span class="pf-left">ZAKO Technical Overview v1.0 — June 2026</span>
+      <span class="pf-right" style="font-family: var(--font-d); font-weight: 700; font-size: 9pt; color: var(--text);">1</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════
+     PAGE 2 — TABLE OF CONTENTS
+════════════════════════════ -->
+<div class="page">
+  <div class="ph">
+    <span class="ph-left"><span>ZAKO</span> Technical Overview</span>
+    <span class="ph-right">Table of Contents</span>
+  </div>
+
+  <div class="sec-num">CONTENTS</div>
+  <h2 class="section-title" style="margin-bottom: 14pt;">Table of<br>Contents</h2>
+
+  <div class="toc-section">Core Protocol</div>
+  <div class="toc-entry"><span class="toc-num">§1</span><span class="toc-title">Introduction — The Sovereign Network</span><span class="toc-dots"></span><span class="toc-page">3</span></div>
+  <div class="toc-entry"><span class="toc-num">§2</span><span class="toc-title">Telux — The Full-Stack Exchange Protocol</span><span class="toc-dots"></span><span class="toc-page">4</span></div>
+  <div class="toc-entry"><span class="toc-num">§3</span><span class="toc-title">BitPads Wire Protocol — Frame Architecture</span><span class="toc-dots"></span><span class="toc-page">5</span></div>
+
+  <div class="toc-section">Foundation</div>
+  <div class="toc-entry"><span class="toc-num">§4</span><span class="toc-title">Identity and Sovereignty Model</span><span class="toc-dots"></span><span class="toc-page">6</span></div>
+  <div class="toc-entry"><span class="toc-num">§5</span><span class="toc-title">The Ledger — telux-ledgerd</span><span class="toc-dots"></span><span class="toc-page">7</span></div>
+
+  <div class="toc-section">Power Governance</div>
+  <div class="toc-entry"><span class="toc-num">§6</span><span class="toc-title">Outstack — Power Architecture</span><span class="toc-dots"></span><span class="toc-page">8</span></div>
+  <div class="toc-entry"><span class="toc-num">§7</span><span class="toc-title">Outstack — Process Class Execution Matrix</span><span class="toc-dots"></span><span class="toc-page">9</span></div>
+
+  <div class="toc-section">Data Architecture</div>
+  <div class="toc-entry"><span class="toc-num">§8</span><span class="toc-title">Island Architecture — Sovereign Data Containers</span><span class="toc-dots"></span><span class="toc-page">10</span></div>
+  <div class="toc-entry"><span class="toc-num">§9</span><span class="toc-title">Exchange Engine, Newgroups, and Peers</span><span class="toc-dots"></span><span class="toc-page">11</span></div>
+
+  <div class="toc-section">Services and Integration</div>
+  <div class="toc-entry"><span class="toc-num">§10</span><span class="toc-title">Service Landscape — PADS, Health, Academy, Agreements</span><span class="toc-dots"></span><span class="toc-page">12</span></div>
+  <div class="toc-entry"><span class="toc-num">§11</span><span class="toc-title">SIMBA — Service Integration Standard</span><span class="toc-dots"></span><span class="toc-page">13</span></div>
+
+  <div class="toc-section">Network and Conformance</div>
+  <div class="toc-entry"><span class="toc-num">§12</span><span class="toc-title">Network Layer — Carriers, Offline Model, Infrastructure</span><span class="toc-dots"></span><span class="toc-page">14</span></div>
+  <div class="toc-entry"><span class="toc-num">§13</span><span class="toc-title">Performance Constants and Conformance Requirements</span><span class="toc-dots"></span><span class="toc-page">15</span></div>
+
+  <div style="margin-top: 18pt; padding: 10pt 12pt; background: var(--code-bg); border-radius: 2pt;">
+    <p style="font-family: var(--font-m); font-size: 8pt; color: var(--muted); line-height: 1.7; margin: 0;">
+      <strong style="color: var(--text);">Cross-references:</strong> Telux Protocol v1.0 · Outstack Protocol v1.0 · ZAKO Wire Conventions v1.0 · ZAKO Codebook Standard v1.0 · ZAKO Pictography Standard v1.0 · PADS Service Specification v1.0 · Health Service Specification v1.0 · Academy Service Specification v1.0 · Agreements Service Specification v1.0 · SIMBA Standard v1.0 · ZAKO Infrastructure Extension Profile v1.0 · ZAKO Performance Constants Index v1.0
+    </p>
+  </div>
+
+  <div style="margin-top: auto;">
+    <div class="pf">
+      <span class="pf-left">ZAKO Technical Overview v1.0 — June 2026</span>
+      <span class="pf-right" style="font-family: var(--font-d); font-weight: 700; font-size: 9pt; color: var(--text);">2</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════
+     PAGE 3 — §1 INTRODUCTION
+════════════════════════════ -->
+<div class="page">
+  <div class="ph">
+    <span class="ph-left"><span>ZAKO</span> Technical Overview</span>
+    <span class="ph-right">§1 — Introduction</span>
+  </div>
+
+  <div class="sec-num">§1</div>
+  <h2 class="section-title">Introduction —<br>The Sovereign Network</h2>
+
+  <p class="lead">ZAKO is a sovereign network OS. A device running ZAKO is not a terminal. It is a full network — a collection of named participants (processes, Islands, daemons) exchanging signed, conserved records over a single protocol at every scale.</p>
+
+  <h3 class="sub-title">1.1 The Design Premise</h3>
+  <p>ZAKO treats harsh conditions — no internet, failing battery, SMS-only connectivity, no cloud — as its design baseline, not its edge case. The system is designed to sustain the most critical exchange under the most challenging conditions. Every architectural decision follows from this premise.</p>
+  <p>The most important exchanges in people's lives — payments, health records, work records, credentials — happen in the places where infrastructure is least reliable. ZAKO's architecture is the answer to that condition.</p>
+
+  <h3 class="sub-title">1.2 One Protocol at Every Scale</h3>
+  <p>The same protocol that governs two daemons exchanging power signals inside a single device also governs two people exchanging a payment over SMS. This is not a coincidence — it is a structural choice. The fractal architecture table below defines the six scales at which Telux operates:</p>
+
+  <div class="fractal">
+    <div class="fl"><div class="fl-box amber"><span class="fl-name">Distribution</span><span class="fl-note">Meta-network of sovereign networks · SIMBA admission · ATTEST chains</span></div></div>
+    <div style="padding-left: 12pt;"><div class="fl"><div class="fl-indent"></div><div class="fl-box"><span class="fl-name">Newgroup</span><span class="fl-note">Multi-party shared context · founding CREATE hash · countersigned records</span></div></div></div>
+    <div style="padding-left: 24pt;"><div class="fl"><div class="fl-indent"></div><div class="fl-box"><span class="fl-name">Device ↔ Device</span><span class="fl-note">Peer exchange · BitPads frames · offline-capable · any carrier</span></div></div></div>
+    <div style="padding-left: 36pt;"><div class="fl"><div class="fl-indent"></div><div class="fl-box"><span class="fl-name">Device</span><span class="fl-note">Sovereign network · 3 Telux daemons · Outstack · Islands</span></div></div></div>
+    <div style="padding-left: 48pt;"><div class="fl"><div class="fl-indent"></div><div class="fl-box"><span class="fl-name">Sub-entity</span><span class="fl-note">Island slot · access-controlled · chain-hashed · capability-gated</span></div></div></div>
+    <div style="padding-left: 60pt;"><div class="fl"><div class="fl-indent"></div><div class="fl-box"><span class="fl-name">Record</span><span class="fl-note">frame_hash · chain_hash · ed25519 signature · BLAKE3</span></div></div></div>
+  </div>
+
+  <h3 class="sub-title">1.3 Core Invariants</h3>
+  <div class="col-2" style="margin-top: 6pt;">
+    <div>
+      <div class="callout">
+        <div class="callout-label">Conservation Invariant</div>
+        <p>For every batch of exchange records, signed flows sum to zero. This is enforced at the wire level by BitLedger. It cannot be bypassed by application code.</p>
+      </div>
+    </div>
+    <div>
+      <div class="callout">
+        <div class="callout-label">Immutability Invariant</div>
+        <p>Records written to <code>telux-ledgerd</code> are never modified. Retakes, corrections, and reversals produce new records alongside originals. The chain is the proof.</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top: auto;">
+    <div class="pf">
+      <span class="pf-left">ZAKO Technical Overview v1.0 — June 2026</span>
+      <span class="pf-right" style="font-family: var(--font-d); font-weight: 700; font-size: 9pt; color: var(--text);">3</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════
+     PAGE 4 — §2 TELUX
+════════════════════════════ -->
+<div class="page">
+  <div class="ph">
+    <span class="ph-left"><span>ZAKO</span> Technical Overview</span>
+    <span class="ph-right">§2 — Telux Protocol</span>
+  </div>
+
+  <div class="sec-num">§2</div>
+  <h2 class="section-title">Telux — The Full-Stack<br>Exchange Protocol</h2>
+
+  <p class="lead"><em>"Tel"</em> — to communicate. Exchange is the essence of communication. Telux is the full-stack system that makes authenticated, conserved, sovereign exchange possible at every scale.</p>
+
+  <h3 class="sub-title">2.1 Why Exchange Is the Foundation</h3>
+  <p>Every meaningful thing a device does involves exchange: a payment is an exchange of value; a work record is an exchange of obligation; a capability grant is an exchange of access; a power mode transition is an exchange of state between Outstack and every listening process.</p>
+  <p>Exchange requires three things to be trustworthy: <strong>identity</strong> (who you are exchanging with), <strong>record</strong> (the exchange must be provable after the fact), and <strong>conservation</strong> (what is given and what is received must balance). These three requirements define Telux's entire architecture.</p>
+
+  <h3 class="sub-title">2.2 The Telux Daemon Triad</h3>
+  <p>Three CRITICAL-class daemons form the exchange infrastructure. They operate in all power modes, including Emergency. They are never gated by Outstack.</p>
+
+  <table>
+    <thead><tr><th>Daemon</th><th>Role</th><th>Class</th><th>Write Policy</th></tr></thead>
+    <tbody>
+      <tr><td>telux-ledgerd</td><td>Append-only ledger · chain-hash computation · BLAKE3 · record validation</td><td class="td-amber">CRITICAL</td><td>fsync before ACK</td></tr>
+      <tr><td>telux-identd</td><td>DID operations · ed25519 signing · capability grants · revocations · SIMBA admission</td><td class="td-amber">CRITICAL</td><td>synchronous</td></tr>
+      <tr><td>telux-sharedb</td><td>Selective disclosure · RESTRICT_FORWARD enforcement · peer record export</td><td class="td-amber">INTERACTIVE</td><td>async · gated in Emergency</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="sub-title">2.3 Exchange Session Lifecycle</h3>
+  <p>A bilateral exchange between two parties follows a defined cycle regardless of carrier:</p>
+
+  <pre>1.  IDENTIFY       Both parties present DIDs · telux-identd verifies
+2.  GRANT          Counterparty is granted disclosure scope · GRANT record
+3.  SEND / RECEIVE Exchange records are composed and signed
+4.  POST           telux-ledgerd writes, fsync, computes chain_hash
+5.  ACK            RECEIVE record produced · chain_hash confirmed
+6.  SETTLE         Conservation check: flows across accounts sum to zero
+7.  SEAL           Compound group closed · final chain_hash anchored</pre>
+
+  <h3 class="sub-title">2.4 Newgroup Exchange</h3>
+  <p>A newgroup is a multi-party shared exchange context — a group invoice pool, a shared work record, a collective agreement. Its founding record is a <code>CREATE</code> (task_code=<code>0x01</code>) whose <code>frame_hash</code> becomes the shared truth anchor. All subsequent records in the newgroup reference this anchor. Any member can verify any record in the newgroup by following the chain back to the founding hash, offline, without any external service.</p>
+
+  <div class="callout" style="margin-top: 8pt;">
+    <div class="callout-label">Offline Is Not Disconnection</div>
+    <p>When a ZAKO device has no external carrier, it is not "offline" — it is operating as a self-contained sovereign network. Internally it is fully functional, fully conserved, fully exchanging. When a carrier becomes available, two sovereign networks exchange. There is no server to reconnect to.</p>
+  </div>
+
+  <div style="margin-top: auto;">
+    <div class="pf">
+      <span class="pf-left">ZAKO Technical Overview v1.0 — June 2026</span>
+      <span class="pf-right" style="font-family: var(--font-d); font-weight: 700; font-size: 9pt; color: var(--text);">4</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════
+     PAGE 5 — §3 BITPADS WIRE
+════════════════════════════ -->
+<div class="page">
+  <div class="ph">
+    <span class="ph-left"><span>ZAKO</span> Technical Overview</span>
+    <span class="ph-right">§3 — BitPads Wire Protocol</span>
+  </div>
+
+  <div class="sec-num">§3</div>
+  <h2 class="section-title">BitPads Wire Protocol —<br>Frame Architecture</h2>
+
+  <p>BitPads is the wire protocol underlying all Telux exchange. It defines four frame types, each optimised for a different transmission context. The Conservation invariant is enforced at this layer. CRC-15 integrity checking runs on all frame types above 1 byte.</p>
+
+  <h3 class="sub-title">3.1 The Four Frame Types</h3>
+
+  <div class="frame-diagram">
+    <div class="frame-row">
+      <span class="frame-label">Pure Signal<br><span style="color: var(--amber);">1 byte</span></span>
+      <div class="frame-bytes">
+        <div class="byte-cell amber">0x80<br>flag</div>
+        <div class="byte-cell" style="width: 60pt; background: white; border: none; color: var(--muted); font-size: 7pt;">← 7 bits payload</div>
+      </div>
+      <span class="byte-count" style="color: var(--muted);">C0 signals · power events<br>daemon heartbeats</span>
+    </div>
+    <div class="frame-row">
+      <span class="frame-label">Anonymous Wave<br><span style="color: var(--amber);">4 bytes</span></span>
+      <div class="frame-bytes">
+        <div class="byte-cell">flags</div>
+        <div class="byte-cell">type</div>
+        <div class="byte-cell wide">payload</div>
+        <div class="byte-cell">CRC</div>
+      </div>
+      <span class="byte-count" style="color: var(--muted);">Presence · ping<br>unsigned broadcast</span>
+    </div>
+    <div class="frame-row">
+      <span class="frame-label">Full Record<br><span style="color: var(--amber);">13 – 29 bytes</span></span>
+      <div class="frame-bytes">
+        <div class="byte-cell">hdr</div>
+        <div class="byte-cell">tc</div>
+        <div class="byte-cell">acct</div>
+        <div class="byte-cell">dom</div>
+        <div class="byte-cell narrow">sep</div>
+        <div class="byte-cell wide">value</div>
+        <div class="byte-cell wide">ts</div>
+        <div class="byte-cell wide">sig</div>
+        <div class="byte-cell">CRC</div>
+      </div>
+      <span class="byte-count" style="color: var(--muted);">Standard record<br>signed · chain-hashed</span>
+    </div>
+    <div class="frame-row">
+      <span class="frame-label">Full BitLedger<br><span style="color: var(--amber);">22+ bytes</span></span>
+      <div class="frame-bytes">
+        <div class="byte-cell amber">hdr</div>
+        <div class="byte-cell">tc</div>
+        <div class="byte-cell">acct</div>
+        <div class="byte-cell">dom</div>
+        <div class="byte-cell narrow">sep</div>
+        <div class="byte-cell wide">value</div>
+        <div class="byte-cell wide">ts</div>
+        <div class="byte-cell wide">DID</div>
+        <div class="byte-cell wide">sig</div>
+        <div class="byte-cell wide">hash</div>
+        <div class="byte-cell">CRC</div>
+      </div>
+      <span class="byte-count" style="color: var(--muted);">Ledger record · includes<br>frame_hash · chain_hash</span>
+    </div>
+  </div>
+
+  <h3 class="sub-title">3.2 Address Fields — Layer 2 Separators</h3>
+  <p>Every ZAKO record is addressed by three Layer 2 separator values that form the organisational key for <code>telux-ledgerd</code>:</p>
+
+  <table>
+    <thead><tr><th>Field</th><th>Range</th><th>Role in ZAKO</th></tr></thead>
+    <tbody>
+      <tr><td>file_sep</td><td>0 – 7</td><td>Island slot in the Personal Island (maps directly to sub_entity 0–7)</td></tr>
+      <tr><td>record_sep</td><td>0 – 31</td><td>Exchange relationship category within an Island</td></tr>
+      <tr><td>group_sep</td><td>0 – 63</td><td>Position within a compound group; <strong>63 = Period Close / Tally</strong></td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="sub-title">3.3 Key Record Fields</h3>
+  <table>
+    <thead><tr><th>Field</th><th>Width</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td>task_code</td><td>6 bits</td><td>Semantic verb — PAY(0x1C), ASSIGN(0x20), ATTEST(0x0E), LEARN(0x3C), etc.</td></tr>
+      <tr><td>account_pair</td><td>4 bits</td><td>Debit/credit account pairing within domain; encodes exchange direction</td></tr>
+      <tr><td>domain</td><td>2 bits</td><td>00 Financial · 01 Engineering · 10 General · 11 Custom (+ extension byte)</td></tr>
+      <tr><td>value</td><td>variable</td><td>Quantity × 10 encoding for one decimal place of precision</td></tr>
+      <tr><td>wall_ts</td><td>4 bytes</td><td>Unix epoch at record creation — wall clock, not lamport</td></tr>
+      <tr><td>restrict_fwd</td><td>1 bit</td><td>RESTRICT_FORWARD flag — record must not be relayed or exported</td></tr>
+      <tr><td>frame_hash</td><td>32 bytes</td><td>BLAKE3(frame_bytes) — record fingerprint</td></tr>
+      <tr><td>chain_hash</td><td>32 bytes</td><td>BLAKE3(frame_hash ‖ prev_chain_hash) — integrity chain</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout" style="margin-top: 8pt;">
+    <div class="callout-label">Conservation at Wire Level</div>
+    <p>The conservation invariant — that signed flows across accounts sum to zero — is verified by <code>telux-ledgerd</code> before the ACK is issued. A record batch that fails conservation is rejected; no partial write occurs.</p>
+  </div>
+
+  <div style="margin-top: auto;">
+    <div class="pf">
+      <span class="pf-left">ZAKO Technical Overview v1.0 — June 2026</span>
+      <span class="pf-right" style="font-family: var(--font-d); font-weight: 700; font-size: 9pt; color: var(--text);">5</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════
+     PAGE 6 — §4 IDENTITY
+════════════════════════════ -->
+<div class="page">
+  <div class="ph">
+    <span class="ph-left"><span>ZAKO</span> Technical Overview</span>
+    <span class="ph-right">§4 — Identity and Sovereignty</span>
+  </div>
+
+  <div class="sec-num">§4</div>
+  <h2 class="section-title">Identity and<br>Sovereignty Model</h2>
+
+  <p class="lead">Identity in ZAKO exists to enable exchange. It is not a feature — it is the prerequisite for trustworthy exchange between parties who may have never met.</p>
+
+  <h3 class="sub-title">4.1 Decentralised Identifiers — did:key</h3>
+  <p>Every ZAKO participant (Sovereign, daemon, SIMBA Node, newgroup node) is identified by a W3C DID using the <code>did:key</code> method. A DID is derived directly from a public key — no external registry, no certificate authority, no network lookup required:</p>
+  <pre>did:key:z6Mk<span class="val">BASE58BTC(ed25519_public_key)</span>
+
+<span class="comment"># Verification: possession of the public key is sufficient.
+# Valid for as long as the keypair is valid.
+# Offline-verifiable by any counterparty at any time.</span></pre>
+
+  <h3 class="sub-title">4.2 Key Material and Security</h3>
+  <p>The Sovereign's signing key is generated on-device. In hardware-backed deployments (Keymaster 4.0 / TrustZone), the private key never leaves the Trusted Execution Environment. In software deployments, the key is encrypted at rest and zeroed in memory on device lock.</p>
+  <p><strong>Key rotation</strong> is accomplished through a chain of <code>BIND</code> (task_code=<code>0x0D</code>) and <code>ATTEST</code> (task_code=<code>0x0E</code>) records: the old key signs the new key's DID; the new key attests continuity. The chain is locally verifiable without any external authority.</p>
+
+  <h3 class="sub-title">4.3 Capability Grants</h3>
+  <p>Access to any Island or sub-entity is governed by explicit capability grants. A grant is a signed <code>GRANT</code> (task_code=<code>0x08</code>) record in the Identity sub-entity, specifying the grantee's DID, the granted scopes, and any time bounds:</p>
+
+  <table>
+    <thead><tr><th>Grant Scope</th><th>Effect</th><th>Issued By</th></tr></thead>
+    <tbody>
+      <tr><td>read_island</td><td>Read access to a named Island's records</td><td>Sovereign</td></tr>
+      <tr><td>write_island</td><td>Write access to a named Island's records</td><td>Sovereign</td></tr>
+      <tr><td>write_exchange</td><td>Post records to Exchange sub-entity</td><td>Sovereign</td></tr>
+      <tr><td>share_record</td><td>Selective disclosure of specific records</td><td>Sovereign</td></tr>
+      <tr><td>simba_node</td><td>SIMBA Node participation rights</td><td>telux-identd (post-admission)</td></tr>
+    </tbody>
+  </table>
+
+  <p>Grants are revocable at any time. A <code>REVOKE</code> (task_code=<code>0x09</code>) record is posted to the Identity sub-entity; <code>telux-identd</code> enforces the revocation immediately. No grace period. No retry window for the revoked node.</p>
+
+  <h3 class="sub-title">4.4 Credential Issuance and Verification</h3>
+  <p>Credentials are <code>ATTEST</code> records in the Identity sub-entity. An authority-issued credential carries the issuing authority's DID as <code>source_did</code>. A self-certified competency carries the Sovereign's own DID. Any counterparty can verify a credential chain offline:</p>
+  <ol style="padding-left: 14pt; font-size: 9pt; line-height: 1.7;">
+    <li>Verify the ATTEST record signature against <code>source_did</code></li>
+    <li>Verify the referenced mastery record against the Sovereign's DID</li>
+    <li>Optionally verify the assessment record referenced by the mastery record</li>
+  </ol>
+  <p style="color: var(--muted); font-size: 8.5pt; margin-top: 4pt;">No network call required at any step. The chain from assessment → mastery → credential is entirely locally verifiable.</p>
+
+  <div style="margin-top: auto;">
+    <div class="pf">
+      <span class="pf-left">ZAKO Technical Overview v1.0 — June 2026</span>
+      <span class="pf-right" style="font-family: var(--font-d); font-weight: 700; font-size: 9pt; color: var(--text);">6</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════
+     PAGE 7 — §5 THE LEDGER
+════════════════════════════ -->
+<div class="page">
+  <div class="ph">
+    <span class="ph-left"><span>ZAKO</span> Technical Overview</span>
+    <span class="ph-right">§5 — The Ledger</span>
+  </div>
+
+  <div class="sec-num">§5</div>
+  <h2 class="section-title">The Ledger —<br>telux-ledgerd</h2>
+
+  <p class="lead"><code>telux-ledgerd</code> is the append-only ledger daemon. It is CRITICAL class — it runs in all five power modes, including Emergency. It is the authoritative record of everything that has happened on a ZAKO device.</p>
+
+  <h3 class="sub-title">5.1 Write Guarantees</h3>
+  <p>Every write to <code>telux-ledgerd</code> follows a strict sequence before the ACK is issued to the caller:</p>
+  <pre>1.  Validate frame structure and mandatory fields
+2.  Verify ed25519 signature against source_did
+3.  Check task_code against caller's declared record model (SIMBA Nodes)
+4.  Compute frame_hash = BLAKE3(frame_bytes)
+5.  Compute chain_hash = BLAKE3(frame_hash ‖ prev_chain_hash)
+6.  Write record to Island partition
+7.  <span class="key">fsync</span> — mandatory before ACK
+8.  Issue ACK with frame_hash and chain_hash to caller</pre>
+
+  <p>Step 7 (fsync) is fixed. It cannot be changed by distribution configuration or Sovereign preference. A write is not confirmed until it has been synced to persistent storage.</p>
+
+  <h3 class="sub-title">5.2 Chain Integrity</h3>
+  <p>Each Island partition maintains its own chain. The <code>chain_hash</code> of each record commits to all prior records in that partition:</p>
+
+  <div class="col-2">
+    <div>
+      <pre style="font-size: 7.5pt;">frame_hash[n]  = BLAKE3(frame_bytes[n])
+chain_hash[n]  = BLAKE3(
+  frame_hash[n] ‖ chain_hash[n-1]
+)</pre>
+      <p style="font-size: 8.5pt; margin-top: 4pt;">Tampering with any record invalidates all subsequent chain_hashes. The chain serves as a tamper-evident seal without requiring any external validator.</p>
+    </div>
+    <div>
+      <div class="callout">
+        <div class="callout-label">No Mutable Balances</div>
+        <p>ZAKO never stores computed aggregates (total XP, running balance, cumulative score) as mutable fields. All totals are computed at read time from the full record set. The ledger is the balance.</p>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="sub-title">5.3 Island Partitioning</h3>
+  <table>
+    <thead><tr><th>Partition Key</th><th>Description</th><th>Access</th></tr></thead>
+    <tbody>
+      <tr><td>(file_sep, record_sep)</td><td>Primary partition — Island slot and relationship type</td><td>Indexed</td></tr>
+      <tr><td>group_sep</td><td>Compound group position within relationship</td><td>Indexed</td></tr>
+      <tr><td>wall_ts</td><td>Time-ordered within partition</td><td>Sorted</td></tr>
+      <tr><td>source_did</td><td>Producer identity — enables per-service provenance queries</td><td>Indexed</td></tr>
+      <tr><td>restrict_fwd</td><td>Forward restriction flag — checked before any export</td><td>Filtered</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="sub-title">5.4 Compound Records</h3>
+  <p>Multi-leg transactions (e.g., payment + content access grant, assessment score + mastery determination) are expressed as compound groups. The first record has <code>Completeness=1</code>. Continuation records carry <code>group_sep=1111</code> headers. The final record has <code>Completeness=0</code>, closing the group. <code>telux-ledgerd</code> guarantees compound groups are written atomically — a group is either fully committed or fully absent.</p>
+
+  <h3 class="sub-title">5.5 JOURNAL Invariant</h3>
+  <p>Records written to the Journal sub-entity (sub_entity=3, file_sep=3) must carry <code>restrict_fwd=1</code>. This is enforced by <code>telux-ledgerd</code>: a Journal record submitted without <code>restrict_fwd=1</code> is rejected. The Journal partition is additionally sealed by SELinux policy — no SIMBA Node capability grant can override this seal.</p>
+
+  <div style="margin-top: auto;">
+    <div class="pf">
+      <span class="pf-left">ZAKO Technical Overview v1.0 — June 2026</span>
+      <span class="pf-right" style="font-family: var(--font-d); font-weight: 700; font-size: 9pt; color: var(--text);">7</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════
+     PAGE 8 — §6 OUTSTACK ARCHITECTURE
+════════════════════════════ -->
+<div class="page">
+  <div class="ph">
+    <span class="ph-left"><span>ZAKO</span> Technical Overview</span>
+    <span class="ph-right">§6 — Outstack Architecture</span>
+  </div>
+
+  <div class="sec-num">§6</div>
+  <h2 class="section-title">Outstack —<br>Power Architecture</h2>
+
+  <p class="lead">Outstack was born from Telux's operating constraint: exchange cannot survive if the device cannot survive. Outstack treats the power budget as a ledger and process class as law.</p>
+
+  <h3 class="sub-title">6.1 The Five Power Modes</h3>
+
+  <table>
+    <thead><tr><th>Mode</th><th>Code</th><th>Battery Threshold</th><th>Process Classes Permitted</th></tr></thead>
+    <tbody>
+      <tr><td>Full Power</td><td class="td-amber">0x0</td><td>&gt; STANDARD_FLOOR (50%)</td><td>ALL — no restrictions</td></tr>
+      <tr><td>Standard</td><td class="td-amber">0x1</td><td>&gt; CONSERVE_FLOOR (20%)</td><td>CRITICAL · INTERACTIVE · BACKGROUND · DEFERRED</td></tr>
+      <tr><td>Conservation</td><td class="td-amber">0x2</td><td>&gt; LOW_FLOOR (10%)</td><td>CRITICAL · INTERACTIVE · BACKGROUND (deferred)</td></tr>
+      <tr><td>Critical Reserve</td><td class="td-amber">0x3</td><td>&gt; SHUTDOWN_FLOOR (3%)</td><td>CRITICAL · INTERACTIVE</td></tr>
+      <tr><td>Emergency</td><td class="td-amber">0x4</td><td>≤ SHUTDOWN_FLOOR or thermal</td><td>CRITICAL only</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="sub-title">6.2 Mode Transition Sequence</h3>
+  <p>Mode transitions are not instantaneous. <code>outstack-powerd</code> follows a defined sequence on every transition:</p>
+
+  <pre>1.  Threshold crossing detected (battery %, thermal, charging state)
+2.  Pre-transition confirmation sample (prevents flip-flop at boundaries)
+3.  MODE_ENTER C0 signal (slot 0x03) emitted to system bus
+4.  POWER_CHANGE record written to System sub-entity (sub_entity=0)
+5.  Gate records written atomically with the POWER_CHANGE record
+6.  outstack-powerd internal mode state updated
+7.  All ZAKO daemons receive MODE_ENTER and update execution policy</pre>
+
+  <p>Steps 3–5 are atomic. A daemon receiving MODE_ENTER can be certain the ledger record was committed before the signal arrived.</p>
+
+  <h3 class="sub-title">6.3 Hysteresis</h3>
+  <p>To prevent mode oscillation at boundaries, Outstack applies a HYSTERESIS_BAND (default: <strong>3%</strong>) to all threshold crossings:</p>
+  <div class="callout">
+    <p>If CONSERVE_FLOOR = 20%: Conservation begins at 20%. Standard resumes at 23%. A device sitting at 21% does not oscillate between Standard and Conservation.</p>
+  </div>
+
+  <h3 class="sub-title">6.4 Power Sources Tracked</h3>
+  <table>
+    <thead><tr><th>Dimension</th><th>Measurement</th><th>Sampling Role</th></tr></thead>
+    <tbody>
+      <tr><td>Battery</td><td>Percentage (0–100), voltage (mV)</td><td>Primary budget signal · mode gate trigger</td></tr>
+      <tr><td>Thermal</td><td>Device temp (°C), CPU thermal zone</td><td>Rate-of-draw signal · Emergency trigger</td></tr>
+      <tr><td>CPU draw</td><td>Instantaneous wattage by class</td><td>Draw accounting · class priority adjustment</td></tr>
+      <tr><td>Charging</td><td>Rate (mW), source (USB/wireless/solar)</td><td>Budget replenishment · upward transition signal</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="sub-title">6.5 The Gate Mechanism</h3>
+  <p>When a mode transition would gate a process class, <code>outstack-powerd</code> submits a <code>REVOKE</code> record through <code>telux-identd</code> targeting the execution capability of all processes in the gated class. A companion <code>GATE</code> record is written to the System sub-entity with the gated class bitmask. The gate is a ledger event — it is provable, timestamped, and signed.</p>
+
+  <div style="margin-top: auto;">
+    <div class="pf">
+      <span class="pf-left">ZAKO Technical Overview v1.0 — June 2026</span>
+      <span class="pf-right" style="font-family: var(--font-d); font-weight: 700; font-size: 9pt; color: var(--text);">8</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════
+     PAGE 9 — §7 EXECUTION MATRIX
+════════════════════════════ -->
+<div class="page">
+  <div class="ph">
+    <span class="ph-left"><span>ZAKO</span> Technical Overview</span>
+    <span class="ph-right">§7 — Process Class Execution Matrix</span>
+  </div>
+
+  <div class="sec-num">§7</div>
+  <h2 class="section-title">Outstack — Process Class<br>Execution Matrix</h2>
+
+  <h3 class="sub-title">7.1 The Five Process Classes</h3>
+  <table>
+    <thead><tr><th>Class</th><th>Code</th><th>Description</th><th>Suspension</th></tr></thead>
+    <tbody>
+      <tr><td>CRITICAL</td><td class="td-amber">0x4</td><td>Core ledger, identity, Exchange Engine — must run in all modes</td><td>Never</td></tr>
+      <tr><td>INTERACTIVE</td><td class="td-amber">0x3</td><td>User-initiated operations, UI services, payment flows</td><td>Emergency only</td></tr>
+      <tr><td>BACKGROUND</td><td class="td-amber">0x2</td><td>Periodic sync, health aggregation, PADS background work</td><td>Conservation and below</td></tr>
+      <tr><td>DEFERRED</td><td class="td-amber">0x1</td><td>Non-urgent updates — may wait hours or days</td><td>Conservation and below</td></tr>
+      <tr><td>OPPORTUNISTIC</td><td class="td-amber">0x0</td><td>Learning Engine inference, Academy AI, speculative prefetch</td><td>All except Full Power</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="sub-title">7.2 Execution Matrix</h3>
+
+  <table class="matrix-table">
+    <thead>
+      <tr>
+        <th>Process Class</th>
+        <th>Full Power</th>
+        <th>Standard</th>
+        <th>Conservation</th>
+        <th>Critical Reserve</th>
+        <th>Emergency</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>CRITICAL</td>
+        <td class="m-yes">✓</td>
+        <td class="m-yes">✓</td>
+        <td class="m-yes">✓</td>
+        <td class="m-yes">✓</td>
+        <td class="m-yes">✓</td>
+      </tr>
+      <tr>
+        <td>INTERACTIVE</td>
+        <td class="m-yes">✓</td>
+        <td class="m-yes">✓</td>
+        <td class="m-yes">✓</td>
+        <td class="m-yes">✓</td>
+        <td class="m-no">✗</td>
+      </tr>
+      <tr>
+        <td>BACKGROUND</td>
+        <td class="m-yes">✓</td>
+        <td class="m-yes">✓</td>
+        <td class="m-defer">defer</td>
+        <td class="m-no">✗</td>
+        <td class="m-no">✗</td>
+      </tr>
+      <tr>
+        <td>DEFERRED</td>
+        <td class="m-yes">✓</td>
+        <td class="m-yes">✓</td>
+        <td class="m-no">✗</td>
+        <td class="m-no">✗</td>
+        <td class="m-no">✗</td>
+      </tr>
+      <tr>
+        <td>OPPORTUNISTIC</td>
+        <td class="m-yes">✓ *</td>
+        <td class="m-no">✗</td>
+        <td class="m-no">✗</td>
+        <td class="m-no">✗</td>
+        <td class="m-no">✗</td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="font-size: 8pt; color: var(--muted); margin-top: 3pt;">* OPPORTUNISTIC runs in Full Power only when battery > OPPORTUNISTIC_FLOOR (default 70%) or device is charging.</p>
+  <p style="font-size: 8pt; color: var(--muted);">defer = process reaches its next safe checkpoint, then suspends until mode lifts or device begins charging.</p>
+
+  <h3 class="sub-title">7.3 Class Declaration and Registration</h3>
+  <p>Every process declares its class in an <code>ASSIGN</code> record written to the System sub-entity when registered with <code>outstack-powerd</code>. The record carries <code>value = process_class_code</code>. A process that executes without a valid registration is treated as BACKGROUND. A process that attempts CRITICAL actions without a CRITICAL registration has those actions queued at INTERACTIVE priority.</p>
+
+  <h3 class="sub-title">7.4 Suspension Protocol</h3>
+  <p>When a gate is applied, <code>outstack-powerd</code> does not use arbitrary interruption. It signals affected processes via the MODE_ENTER C0 signal and expects them to reach their declared suspension point within the standard window:</p>
+  <table>
+    <thead><tr><th>Class</th><th>Suspension Window</th><th>On Timeout</th></tr></thead>
+    <tbody>
+      <tr><td>BACKGROUND</td><td>2 seconds</td><td>SUSPEND record posted; SIMBA Nodes have capabilities temporarily revoked</td></tr>
+      <tr><td>DEFERRED</td><td>5 seconds</td><td>SUSPEND record posted; process flagged for review</td></tr>
+      <tr><td>INTERACTIVE</td><td>Emergency gate only · 10 seconds</td><td>Capability revocation; process class downgrade</td></tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top: auto;">
+    <div class="pf">
+      <span class="pf-left">ZAKO Technical Overview v1.0 — June 2026</span>
+      <span class="pf-right" style="font-family: var(--font-d); font-weight: 700; font-size: 9pt; color: var(--text);">9</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════
+     PAGE 10 — §8 ISLANDS
+════════════════════════════ -->
+<div class="page">
+  <div class="ph">
+    <span class="ph-left"><span>ZAKO</span> Technical Overview</span>
+    <span class="ph-right">§8 — Island Architecture</span>
+  </div>
+
+  <div class="sec-num">§8</div>
+  <h2 class="section-title">Island Architecture —<br>Sovereign Data Containers</h2>
+
+  <p>An Island is a named, access-controlled, cryptographically chained partition of the Sovereign's ledger. Each Island is a distinct sub-entity with its own namespace and capability scope.</p>
+
+  <h3 class="sub-title">8.1 Personal Island — Static Sub-Entity Map</h3>
+  <p>The Personal Island (file_sep 0–7) is the foundational Island — every ZAKO device has exactly one. Its sub-entity slots are statically assigned:</p>
+
+  <div class="island-grid">
+    <div class="island-cell active"><div class="ic-num">sub·0 / fs·0</div><div class="ic-name">System</div></div>
+    <div class="island-cell active"><div class="ic-num">sub·1 / fs·1</div><div class="ic-name">Identity</div></div>
+    <div class="island-cell active"><div class="ic-num">sub·2 / fs·2</div><div class="ic-name">Exchange</div></div>
+    <div class="island-cell active" style="border-color: #880000; background: #FFF5F5;"><div class="ic-num" style="color: #880000;">sub·3 / fs·3</div><div class="ic-name" style="color: #880000;">Journal ⚿</div></div>
+    <div class="island-cell active"><div class="ic-num">sub·4 / fs·4</div><div class="ic-name">Health</div></div>
+    <div class="island-cell active"><div class="ic-num">sub·5 / fs·5</div><div class="ic-name">Academy</div></div>
+    <div class="island-cell active"><div class="ic-num">sub·6 / fs·6</div><div class="ic-name">People</div></div>
+    <div class="island-cell active"><div class="ic-num">sub·7 / fs·7</div><div class="ic-name">Places</div></div>
+    <div class="island-cell reserved"><div class="ic-num">sub·8–15</div><div class="ic-name">Reserved</div></div>
+    <div class="island-cell" style="grid-column: span 3; border-color: var(--amber); background: var(--amber-bg);"><div class="ic-num">sub·16–31</div><div class="ic-name" style="color: var(--amber);">Work Islands × 16 max (PADS service)</div></div>
+  </div>
+  <p style="font-size: 7.5pt; color: var(--muted); margin-top: 3pt;">⚿ Journal: RESTRICT_FORWARD mandatory · SELinux sealed · no SIMBA Node capability grant can override</p>
+
+  <h3 class="sub-title">8.2 Access Control Model</h3>
+  <p>Access to any Island is governed by explicit capability grants issued by the Sovereign via <code>telux-identd</code>. The Sovereign controls exactly what is shared with whom, under what conditions, for how long. There is no implicit cross-Island access — each Island boundary is enforced at protocol level.</p>
+
+  <h3 class="sub-title">8.3 Work Islands — PADS Service</h3>
+  <p>Work Islands occupy sub-entity slots 16–31. A Sovereign may have up to 16 active Work Islands concurrently. Each represents a work relationship context (employer, client, project, service area). Work Islands are created and managed by the PADS service and share the same chain-hash ledger infrastructure as the Personal Island.</p>
+
+  <table>
+    <thead><tr><th>Work Verb</th><th>task_code</th><th>Semantics</th></tr></thead>
+    <tbody>
+      <tr><td>ASSIGN</td><td class="td-amber">0x20</td><td>Work task assignment — created by employer or self</td></tr>
+      <tr><td>REPORT</td><td class="td-amber">0x21</td><td>Work progress or completion report</td></tr>
+      <tr><td>CLAIM</td><td class="td-amber">0x22</td><td>Time or deliverable claim against an assignment</td></tr>
+      <tr><td>INVOICE</td><td class="td-amber">0x23 / 0x1B</td><td>Invoice issued for claimed work</td></tr>
+      <tr><td>PAY</td><td class="td-amber">0x1C</td><td>Payment settled against an invoice</td></tr>
+      <tr><td>EXPENSE</td><td class="td-amber">0x26</td><td>Expense claim — reimbursable cost incurred during work</td></tr>
+      <tr><td>TRAVEL</td><td class="td-amber">0x27</td><td>Travel record — distance, route, associated assignment</td></tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top: auto;">
+    <div class="pf">
+      <span class="pf-left">ZAKO Technical Overview v1.0 — June 2026</span>
+      <span class="pf-right" style="font-family: var(--font-d); font-weight: 700; font-size: 9pt; color: var(--text);">10</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════
+     PAGE 11 — §9 EXCHANGE ENGINE
+════════════════════════════ -->
+<div class="page">
+  <div class="ph">
+    <span class="ph-left"><span>ZAKO</span> Technical Overview</span>
+    <span class="ph-right">§9 — Exchange Engine and Peers</span>
+  </div>
+
+  <div class="sec-num">§9</div>
+  <h2 class="section-title">Exchange Engine,<br>Newgroups, and Peers</h2>
+
+  <h3 class="sub-title">9.1 The Exchange Engine</h3>
+  <p>The Exchange Engine is the CRITICAL-class component that manages bilateral and multilateral financial and record exchange. It is the primary interface between the Sovereign's financial life and the ledger. It enforces the conservation invariant at the application layer (above the wire-level enforcement in <code>telux-ledgerd</code>).</p>
+  <p>The Exchange Engine's core settlement loop runs at CRITICAL class. Its UI presentation layer (invoicing, payment approval dialogs) runs at INTERACTIVE. Its background sync (pending invoice reconciliation, receipt matching) runs at BACKGROUND.</p>
+
+  <h3 class="sub-title">9.2 Bilateral Exchange — SEND / RECEIVE Cycle</h3>
+  <p>A bilateral exchange between Sovereign A and Sovereign B produces a symmetric pair of records. Each party holds their own copy in their own ledger, referenced by the same <code>frame_hash</code> as a shared truth anchor:</p>
+  <div class="col-2">
+    <div>
+      <pre style="font-size: 7.5pt;"><span class="comment"># Sovereign A ledger</span>
+task_code    = 0x1C  PAY
+account_pair = 1001  (Asset → Liability)
+value        = 2400  (MK 240.00)
+dest_did     = Sovereign_B_DID
+frame_hash   = a3f9…c012</pre>
+    </div>
+    <div>
+      <pre style="font-size: 7.5pt;"><span class="comment"># Sovereign B ledger</span>
+task_code    = 0x1E  RECEIVE
+account_pair = 0110  (Receivable → Income)
+value        = 2400
+source_did   = Sovereign_A_DID
+ref_hash     = a3f9…c012</pre>
+    </div>
+  </div>
+  <p style="font-size: 8.5pt; color: var(--muted);">The <code>frame_hash</code> serves as the shared truth anchor. Either party can present their record; the counterparty can verify it references the same exchange without network access.</p>
+
+  <h3 class="sub-title">9.3 Newgroup Model</h3>
+  <p>A newgroup is a multi-party shared exchange context. It is founded by a single <code>CREATE</code> record (task_code=<code>0x01</code>). The <code>frame_hash</code> of the founding record becomes the newgroup's truth anchor — a stable identifier that all subsequent records in the newgroup reference.</p>
+
+  <table>
+    <thead><tr><th>Event</th><th>task_code</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td>Found</td><td class="td-amber">0x01 CREATE</td><td>Establishes the newgroup; frame_hash becomes the group anchor</td></tr>
+      <tr><td>Join</td><td class="td-amber">0x06 BIND</td><td>Member joins; BIND record references the group anchor</td></tr>
+      <tr><td>Post</td><td class="td-amber">any verb</td><td>Member posts a record; must carry the group anchor as ref_hash</td></tr>
+      <tr><td>Countersign</td><td class="td-amber">0x0E ATTEST</td><td>Newgroup node countersigns a member's record for collective authority</td></tr>
+      <tr><td>Resolve</td><td class="td-amber">0x15 COMMIT</td><td>Closes a newgroup context (agreement fulfilled, invoice settled)</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="sub-title">9.4 Period Tallies</h3>
+  <p>At the close of a defined period (week, month, custom interval), the Exchange Engine produces a Tally — a compound record group summarising all exchange activity in that period. Tally records use <code>group_sep=63</code> (the reserved Period Close value). A Tally must be the last record written in its partition before the period boundary. It does not replace the underlying records — it is a summary that references them.</p>
+
+  <div class="callout" style="margin-top: 8pt;">
+    <div class="callout-label">Hosted Newgroup Infrastructure</div>
+    <p>A Ledger Node (defined in the Infrastructure Extension Profile) can host a newgroup on behalf of its members. It countersigns member records within 2 seconds of receipt. The Ledger Node's countersignature is an ATTEST record — itself a ledger entry. The Sovereign maintains a full local copy of all newgroup records they participated in.</p>
+  </div>
+
+  <div style="margin-top: auto;">
+    <div class="pf">
+      <span class="pf-left">ZAKO Technical Overview v1.0 — June 2026</span>
+      <span class="pf-right" style="font-family: var(--font-d); font-weight: 700; font-size: 9pt; color: var(--text);">11</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════
+     PAGE 12 — §10 SERVICES
+════════════════════════════ -->
+<div class="page">
+  <div class="ph">
+    <span class="ph-left"><span>ZAKO</span> Technical Overview</span>
+    <span class="ph-right">§10 — Service Landscape</span>
+  </div>
+
+  <div class="sec-num">§10</div>
+  <h2 class="section-title">Service Landscape</h2>
+
+  <div class="col-2">
+    <div>
+      <h3 class="sub-title">PADS — Work Records</h3>
+      <p style="font-size: 9pt;">The Work Record Service. Manages Work Islands (sub-entity 16–31). Provides seven work verbs (ASSIGN through TRAVEL). Produces period tallies. Exposes five service views: Tasks, Money, Notes, Exchanges, Tallies. External compatibility via <code>pads-v1</code> URL scheme (<code>#1pa/</code> prefix).</p>
+      <p style="font-family: var(--font-m); font-size: 8pt; color: var(--muted);">Process class: INTERACTIVE (core)<br>Background sync: BACKGROUND</p>
+    </div>
+    <div>
+      <h3 class="sub-title">Health — Health Records</h3>
+      <p style="font-size: 9pt;">Health Island at sub-entity 4. Twelve record category slots (record_sep 0–11). Reproductive and mental health records default to <code>restrict_fwd=1</code>. Blood pressure encoded as a compound record (systolic + diastolic). Health tallies at period close.</p>
+      <p style="font-family: var(--font-m); font-size: 8pt; color: var(--muted);">Process class: INTERACTIVE<br>Sensor aggregation: BACKGROUND</p>
+    </div>
+  </div>
+
+  <hr>
+
+  <div class="col-2">
+    <div>
+      <h3 class="sub-title">Academy — Learning Records</h3>
+      <p style="font-size: 9pt;">Academy Island at sub-entity 5. Content lifecycle: CONSUME → PROGRESS → COMPLETE → REVISIT. Assessment compound records (score + time + mastery determination). Credentials issued as ATTEST records in the Identity sub-entity and verifiable offline. XP is computed from ledger records at read time — never stored as a mutable balance.</p>
+      <div style="margin-top: 5pt;">
+        <table>
+          <thead><tr><th>Metric</th><th>Model</th></tr></thead>
+          <tbody>
+            <tr><td>Streaks</td><td>Computed by counting consecutive days with COMPLETE records</td></tr>
+            <tr><td>XP</td><td>Sum of all XP records in period — never mutable balance</td></tr>
+            <tr><td>Mastery</td><td>0–50 scale · references assessment frame_hash</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-family: var(--font-m); font-size: 8pt; color: var(--muted);">Learning Engine: OPPORTUNISTIC<br>Assessment scoring: INTERACTIVE</p>
+    </div>
+    <div>
+      <h3 class="sub-title">Agreements — Contracts</h3>
+      <p style="font-size: 9pt;">Agreement lifecycle managed as a state machine. Each party holds a sovereign copy of the agreement; the shared truth anchor is the <code>frame_hash</code> of the founding PROPOSE record. State transitions: PROPOSE → COUNTER → ACCEPT → ACTIVE, with branching resolution paths (FULFILL, BREACH, CANCEL, EXPIRE, DISPUTE).</p>
+      <div style="margin-top: 5pt;">
+        <table>
+          <thead><tr><th>State</th><th>Record</th></tr></thead>
+          <tbody>
+            <tr><td>PROPOSE</td><td class="td-amber">0x36 PROPOSE</td></tr>
+            <tr><td>COUNTER</td><td class="td-amber">0x3A COUNTER</td></tr>
+            <tr><td>ACCEPT</td><td class="td-amber">0x3B ACCEPT</td></tr>
+            <tr><td>FULFILL</td><td class="td-amber">0x15 COMMIT</td></tr>
+            <tr><td>BREACH</td><td class="td-amber">0x37 BREACH</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-family: var(--font-m); font-size: 8pt; color: var(--muted);">Process class: INTERACTIVE<br>Hosted variant: Ledger Node countersigns</p>
+    </div>
+  </div>
+
+  <div style="margin-top: auto;">
+    <div class="pf">
+      <span class="pf-left">ZAKO Technical Overview v1.0 — June 2026</span>
+      <span class="pf-right" style="font-family: var(--font-d); font-weight: 700; font-size: 9pt; color: var(--text);">12</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════
+     PAGE 13 — §11 SIMBA
+════════════════════════════ -->
+<div class="page">
+  <div class="ph">
+    <span class="ph-left"><span>ZAKO</span> Technical Overview</span>
+    <span class="ph-right">§11 — SIMBA Integration Standard</span>
+  </div>
+
+  <div class="sec-num">§11</div>
+  <h2 class="section-title">SIMBA — Service<br>Integration Standard</h2>
+
+  <p><em>Service Integration for Mobile Business Applications.</em> SIMBA defines the compliance requirements an external service must satisfy to be admitted as a participating node on the ZAKO device network.</p>
+
+  <h3 class="sub-title">11.1 The SIMBA Node Model</h3>
+  <p>An admitted service becomes a SIMBA Node — a named, registered participant with its own DID, a declared process class, a capability grant from the Sovereign, and a signed manifest on file with the distribution. A SIMBA Node is not a guest. It is subject to exactly the same protocol rules as native ZAKO daemons.</p>
+
+  <h3 class="sub-title">11.2 Service Manifest — Required Fields</h3>
+
+  <div class="col-2">
+    <div>
+      <pre style="font-size: 7.5pt;"><span class="comment"># Identity</span>
+<span class="key">service_did:</span>      <span class="val">did:key:z6Mk…</span>
+<span class="key">service_name:</span>     <span class="val">"FieldPay v2"</span>
+<span class="key">provider_name:</span>    <span class="val">"FieldPay Ltd"</span>
+<span class="key">simba_version:</span>    <span class="val">1.0</span>
+
+<span class="comment"># Process class</span>
+<span class="key">process_class:</span>    <span class="val">INTERACTIVE</span>
+<span class="key">suspension_safe:</span>  <span class="val">true</span>
+
+<span class="comment"># Capabilities</span>
+<span class="key">capabilities_requested:</span>
+  - scope: <span class="val">read_island</span>
+    island: <span class="val">exchange</span>
+  - scope: <span class="val">write_exchange</span>
+    required: <span class="val">true</span></pre>
+    </div>
+    <div>
+      <pre style="font-size: 7.5pt;"><span class="comment"># Record model</span>
+<span class="key">record_types_produced:</span>
+  - task_code: <span class="val">0x1C</span>  <span class="comment"># PAY</span>
+  - task_code: <span class="val">0x1B</span>  <span class="comment"># INVOICE</span>
+  - task_code: <span class="val">0x1E</span>  <span class="comment"># RECEIVE</span>
+
+<span class="comment"># Network behaviour</span>
+<span class="key">outbound_connections:</span>
+  - endpoint: <span class="val">api.fieldpay.io</span>
+    purpose: <span class="val">payment settlement</span>
+    data_sent: <span class="val">payment references</span>
+    records_produced:
+      - <span class="val">SEND</span>
+      - <span class="val">RECEIVE</span>
+    offline_capable: <span class="val">true</span></pre>
+    </div>
+  </div>
+
+  <h3 class="sub-title">11.3 Eight Conformance Requirements</h3>
+
+  <div class="comp-row"><span class="comp-num">1</span><span class="comp-text"><strong>Manifest complete, signed, admitted.</strong> No service operates without a distribution-attested manifest.</span><span class="comp-code">SIMBA §11.1</span></div>
+  <div class="comp-row"><span class="comp-num">2</span><span class="comp-text"><strong>Process class declared and honoured.</strong> Service never exceeds declared class. Suspension signals honoured within window.</span><span class="comp-code">SIMBA §5</span></div>
+  <div class="comp-row"><span class="comp-num">3</span><span class="comp-text"><strong>No parallel sovereign data store.</strong> Every meaningful event produces a TELUX record. No shadow database.</span><span class="comp-code">SIMBA §6.1</span></div>
+  <div class="comp-row"><span class="comp-num">4</span><span class="comp-text"><strong>All network calls declared and recorded.</strong> No undeclared outbound connection. Every connection maps to a ledger record.</span><span class="comp-code">SIMBA §6.4</span></div>
+  <div class="comp-row"><span class="comp-num">5</span><span class="comp-text"><strong>Capabilities not exceeded.</strong> Service operates within granted scopes. Degrades gracefully on revocation.</span><span class="comp-code">SIMBA §7</span></div>
+  <div class="comp-row"><span class="comp-num">6</span><span class="comp-text"><strong>RESTRICT_FORWARD never bypassed.</strong> telux-sharedb enforces at write time regardless of capability grant.</span><span class="comp-code">SIMBA §6.3</span></div>
+  <div class="comp-row"><span class="comp-num">7</span><span class="comp-text"><strong>UI renders within ZAKO design language.</strong> No independent brand chrome, typefaces, or component systems.</span><span class="comp-code">SIMBA §8</span></div>
+  <div class="comp-row"><span class="comp-num">8</span><span class="comp-text"><strong>Records match declared record model.</strong> telux-ledgerd rejects records with undeclared task_codes from SIMBA Nodes.</span><span class="comp-code">SIMBA §6.2</span></div>
+
+  <div style="margin-top: auto;">
+    <div class="pf">
+      <span class="pf-left">ZAKO Technical Overview v1.0 — June 2026</span>
+      <span class="pf-right" style="font-family: var(--font-d); font-weight: 700; font-size: 9pt; color: var(--text);">13</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════
+     PAGE 14 — §12 NETWORK LAYER
+════════════════════════════ -->
+<div class="page">
+  <div class="ph">
+    <span class="ph-left"><span>ZAKO</span> Technical Overview</span>
+    <span class="ph-right">§12 — Network and Carrier Layer</span>
+  </div>
+
+  <div class="sec-num">§12</div>
+  <h2 class="section-title">Network Layer — Carriers,<br>Offline Model, Infrastructure</h2>
+
+  <h3 class="sub-title">12.1 Carriers as Roads</h3>
+  <p>ZAKO does not live inside a carrier network. SMS, Bluetooth LE, QR code, and IP are <em>carriers</em> — transport surfaces that BitPads frames may travel over. The carrier does not confer validity. The ed25519 signature does. A payment sent over SMS is as valid as one sent over IP; a credential shared by QR code is as verifiable as one delivered over a TLS API.</p>
+
+  <table>
+    <thead><tr><th>Carrier</th><th>Frame Encoding</th><th>Offline Capable</th><th>Typical Use</th></tr></thead>
+    <tbody>
+      <tr><td>IP / Mobile Data</td><td>BitPads binary (preferred)</td><td>No (requires data)</td><td>Full sync · newgroup posts · content delivery</td></tr>
+      <tr><td>SMS</td><td>BitPads compact (CRC-15 + base encoding)</td><td>2G sufficient</td><td>Payment exchange · record delivery · emergency comms</td></tr>
+      <tr><td>Bluetooth LE</td><td>BitPads binary</td><td>Yes — device-to-device</td><td>Peer exchange · point-of-sale · credential presentation</td></tr>
+      <tr><td>QR Code</td><td>pads-v1 URL (#1pa/ scheme)</td><td>Yes — scan-and-display</td><td>Credential presentation · invoice initiation · grant transfer</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="sub-title">12.2 Offline-First Guarantees</h3>
+  <p>ZAKO implementations must satisfy these offline-first requirements:</p>
+  <div class="col-2">
+    <div>
+      <div style="font-size: 9pt; padding: 4pt 0; border-bottom: 0.5pt solid var(--rule);">Records are written, signed, and chain-hashed on-device before any transmission occurs.</div>
+      <div style="font-size: 9pt; padding: 4pt 0; border-bottom: 0.5pt solid var(--rule);">Credentials are verifiable from the Sovereign's public key alone — no resolver.</div>
+      <div style="font-size: 9pt; padding: 4pt 0;">Academy content is cached offline before study begins — no mid-lesson network call.</div>
+    </div>
+    <div>
+      <div style="font-size: 9pt; padding: 4pt 0; border-bottom: 0.5pt solid var(--rule);">Exchange sessions may complete entirely offline; sync occurs when connectivity is available.</div>
+      <div style="font-size: 9pt; padding: 4pt 0; border-bottom: 0.5pt solid var(--rule);">Assessment records and completion events are posted to local ledger before any upload.</div>
+      <div style="font-size: 9pt; padding: 4pt 0;">No ZAKO core service may require network connectivity for its primary function.</div>
+    </div>
+  </div>
+
+  <h3 class="sub-title">12.3 Infrastructure Extension Profile — Node Roles</h3>
+  <p>ZAKO distributions may deploy infrastructure nodes that extend the network without violating sovereign principles. Four roles are defined:</p>
+
+  <table>
+    <thead><tr><th>Role</th><th>Function</th><th>Sovereign Impact</th></tr></thead>
+    <tbody>
+      <tr><td>Personal Device</td><td>Full ZAKO stack · all Islands · all services</td><td>The Sovereign's primary node</td></tr>
+      <tr><td>Relay Node</td><td>BitPads frame routing · store-and-forward · carrier bridging</td><td>No sovereign data stored; frames are opaque to relay</td></tr>
+      <tr><td>Ledger Node</td><td>Hosted newgroup ledger · countersigns within 2 seconds</td><td>Sovereign holds local copy; Ledger Node cannot unilaterally modify</td></tr>
+      <tr><td>Content Node</td><td>Offline-first content delivery (Academy, agreements) · BLAKE3-addressed content</td><td>Delivers; does not record sovereign activity</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout" style="margin-top: 8pt;">
+    <div class="callout-label">Content Addressing</div>
+    <p>Content delivered by a Content Node is identified by <code>BLAKE3(content_bytes)</code>. A Sovereign's device verifies the content against the stored hash before presenting it. Corrupt or substituted content is rejected before rendering.</p>
+  </div>
+
+  <div style="margin-top: auto;">
+    <div class="pf">
+      <span class="pf-left">ZAKO Technical Overview v1.0 — June 2026</span>
+      <span class="pf-right" style="font-family: var(--font-d); font-weight: 700; font-size: 9pt; color: var(--text);">14</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════
+     PAGE 15 — §13 CONSTANTS & CONFORMANCE
+════════════════════════════ -->
+<div class="page">
+  <div class="ph">
+    <span class="ph-left"><span>ZAKO</span> Technical Overview</span>
+    <span class="ph-right">§13 — Performance Constants and Conformance</span>
+  </div>
+
+  <div class="sec-num">§13</div>
+  <h2 class="section-title">Performance Constants<br>and Conformance</h2>
+
+  <p style="margin-bottom: 8pt; font-size: 9pt;">Adjustability codes: <strong>FIXED</strong> — cannot be changed by any party · <strong>DIST</strong> — distribution sets at deployment · <strong>DIST+SOV</strong> — distribution sets default, Sovereign may adjust within range · <strong>SOV</strong> — Sovereign sets freely.</p>
+
+  <table>
+    <thead><tr><th>Constant</th><th>Value</th><th>Code</th><th>Protocol</th></tr></thead>
+    <tbody>
+      <tr><td>CHAIN_HASH_ALGORITHM</td><td>BLAKE3</td><td class="td-amber">FIXED</td><td>Telux / Wire</td></tr>
+      <tr><td>SOVEREIGN_SIG_ALGORITHM</td><td>ed25519</td><td class="td-amber">FIXED</td><td>Telux</td></tr>
+      <tr><td>LEDGER_FSYNC_POLICY</td><td>synchronous before ACK</td><td class="td-amber">FIXED</td><td>Telux</td></tr>
+      <tr><td>FRAME_WIRE_CRC</td><td>CRC-15</td><td class="td-amber">FIXED</td><td>BitPads</td></tr>
+      <tr><td>MAX_PICTOGRAPHY_SEQUENCE</td><td>8 symbols</td><td class="td-amber">FIXED</td><td>Pictography</td></tr>
+      <tr><td>TALLY_MUST_BE_LAST</td><td>true — group_sep=63 closes period</td><td class="td-amber">FIXED</td><td>Wire Conventions</td></tr>
+      <tr><td>JOURNAL_RESTRICT_FWD</td><td>mandatory — enforced by ledgerd</td><td class="td-amber">FIXED</td><td>Wire Conventions</td></tr>
+      <tr><td>SHUTDOWN_FLOOR</td><td>3%</td><td style="color: #880000; font-family: var(--font-m); font-size: 8pt;">FIXED</td><td>Outstack</td></tr>
+      <tr><td>STANDARD_FLOOR</td><td>50%</td><td class="td-amber">DIST</td><td>Outstack</td></tr>
+      <tr><td>CONSERVE_FLOOR</td><td>20%</td><td class="td-amber">DIST</td><td>Outstack</td></tr>
+      <tr><td>LOW_FLOOR</td><td>10%</td><td class="td-amber">DIST</td><td>Outstack</td></tr>
+      <tr><td>OPPORTUNISTIC_FLOOR</td><td>70%</td><td class="td-amber">DIST</td><td>Outstack</td></tr>
+      <tr><td>HYSTERESIS_BAND</td><td>3%</td><td class="td-amber">DIST</td><td>Outstack</td></tr>
+      <tr><td>POWER_SAMPLE_FULL</td><td>30 seconds</td><td class="td-amber">DIST</td><td>Outstack</td></tr>
+      <tr><td>POWER_SAMPLE_CONSERVE</td><td>60 seconds</td><td class="td-amber">DIST</td><td>Outstack</td></tr>
+      <tr><td>POWER_SAMPLE_LOW</td><td>120 seconds</td><td class="td-amber">DIST</td><td>Outstack</td></tr>
+      <tr><td>LEDGER_NODE_COUNTERSIGN_SLA</td><td>2 seconds</td><td class="td-amber">DIST</td><td>Infra Profile</td></tr>
+      <tr><td>SIMBA_SUSPENSION_WINDOW_BG</td><td>2 seconds</td><td class="td-amber">DIST</td><td>SIMBA / Outstack</td></tr>
+      <tr><td>MAX_WORK_ISLANDS</td><td>16 concurrent</td><td class="td-amber">DIST</td><td>PADS</td></tr>
+      <tr><td>MASTERY_SCALE</td><td>0–50</td><td class="td-amber">DIST</td><td>Academy</td></tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top: 10pt; display: grid; grid-template-columns: 1fr 1fr; gap: 10pt;">
+    <div style="padding: 8pt 10pt; background: var(--code-bg); border-radius: 2pt; font-family: var(--font-m); font-size: 7.5pt; line-height: 1.8; color: var(--muted);">
+      <strong style="color: var(--text); display: block; margin-bottom: 3pt;">Cross-reference Index</strong>
+      Telux Protocol v1.0<br>
+      Outstack Protocol v1.0<br>
+      ZAKO Wire Conventions v1.0<br>
+      ZAKO Codebook Standard v1.0<br>
+      ZAKO Performance Constants Index v1.0<br>
+      SIMBA Standard v1.0<br>
+      ZAKO Infrastructure Extension Profile v1.0
+    </div>
+    <div style="padding: 8pt 10pt; background: var(--amber-bg); border: 0.75pt solid #E8A840; border-radius: 2pt; font-size: 8.5pt; line-height: 1.7;">
+      <strong style="color: var(--amber); font-family: var(--font-m); font-size: 7pt; letter-spacing: 0.15em; text-transform: uppercase; display: block; margin-bottom: 4pt;">First Edition</strong>
+      <strong>Ya!</strong> — ZAKO for Cat S22<br>
+      <span style="color: var(--muted); font-family: var(--font-m); font-size: 7.5pt;"><em>Ya</em> — "go" in Bemba.<br>The beginning of sovereign exchange.</span>
+    </div>
+  </div>
+
+  <div style="margin-top: auto;">
+    <div class="pf">
+      <span class="pf-left">ZAKO Technical Overview v1.0 — June 2026</span>
+      <span class="pf-center">Sub-protocol of ZAKO Standard v1.x · All constants normative as of June 1, 2026</span>
+      <span class="pf-right" style="font-family: var(--font-d); font-weight: 700; font-size: 9pt; color: var(--text);">15</span>
+    </div>
+  </div>
+</div>
+
+</div><!-- /page-wrap -->
+</body>
+</html>

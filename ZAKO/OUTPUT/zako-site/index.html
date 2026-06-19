@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZAKO — A Sovereign Mobile Operating System</title>
+<meta name="description" content="ZAKO: a sovereign mobile operating system built for contexts where the phone must serve its user, not its manufacturer.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="masthead-meta mono">
+      <span>BABB · SOVEREIGN SYSTEMS</span>
+      <span class="masthead-rule"></span>
+      <span>ZAKO STANDARD v1</span>
+    </div>
+    <h1 class="masthead-title">
+      <span class="masthead-subtitle">A Sovereign Mobile Operating System</span>
+      ZAKO
+    </h1>
+    <p class="masthead-dek">Every interaction is a record. Conservation is enforced at the wire level. Sovereignty is the design constraint. A three-part exploration of a different kind of phone.</p>
+    <div class="masthead-stamp mono" aria-hidden="true">
+      <span>BABB CAT</span><span>2026-06</span><span>ROADMAP</span>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <!-- LEFT RAIL -->
+  <nav class="rail rail-left" aria-label="Article navigation">
+    <p class="rail-title mono">Articles</p>
+    <div class="article-nav">
+      <a class="nav-link active" data-article="part1" href="#part1">I · The Premise</a>
+      <a class="nav-link" data-article="part2" href="#part2">II · The Engineering</a>
+      <a class="nav-link" data-article="part3" href="#part3">III · The Context</a>
+    </div>
+    <div class="nav-divider"></div>
+    <p class="toc-title mono">Sections</p>
+    <div id="toc-sections"></div>
+    <div class="rail-foot mono"><p>48 source documents.<br>One architecture. One sovereignty.</p></div>
+  </nav>
+
+  <!-- ===== PART I ===== -->
+  <main class="article article-page" id="part1">
+    <section class="article-section" id="p1-locked">
+      <p class="opening-line">A Cat S22 Flip, locked behind a PIN no one remembers.</p>
+      <p>Ruggedized, palm-sized, built for job sites. Useless until you wipe it.</p>
+      <p>The stock Android recovery menu is two button presses deep. Factory reset. Thirty seconds. The phone reboots to a blank setup screen — no accounts, no data, no assumptions. Just a small slab of computing potential asking a question it has never been allowed to ask before:</p>
+      <p><em>What do you put on it?</em></p>
+      <p>Not what Google suggests. Not what Bullitt shipped. What do <em>you</em> put on a phone when you're starting from nothing and answering to no one?</p>
+      <p>That question is the origin of ZAKO.</p>
+    </section>
+
+    <section class="article-section" id="p1-manufacturer">
+      <h2><span class="sec-no mono">01</span>Every Phone Serves Its Manufacturer</h2>
+      <p>Here's the thing about your phone — every phone, regardless of what it cost or who sold it to you. It maintains relationships you didn't choose.</p>
+      <p>Android, as it reaches you from any manufacturer, is built around continuous check-in with Google's infrastructure. Push notifications route through Google's servers. Application signatures verify against Google's keys. Location history, usage patterns, crash reports — all of it flows to data centers in jurisdictions the phone's user has never visited.<button class="note-ref mono" data-note="n1" aria-expanded="false">n.01</button></p>
+      <aside class="annotation" id="n1" hidden>
+        <p class="annotation-label mono">Technical · GMS Power Draw</p>
+        <p>Google Mobile Services maintains persistent connections that draw 60–120mW continuously. On a 1450mAh (5.4Wh) battery, that's 1–2% of total capacity per hour consumed purely on maintaining Google's infrastructure relationships. Verified by packet capture on stock firmware.</p>
+      </aside>
+      <p>Apple's approach is structurally similar and in many ways more complete. The phone is a terminal into Apple's services. Its value proposition depends on that integration.</p>
+      <p>Neither is dishonest about what it is. Both are internally coherent. Both serve hundreds of millions of people well enough.</p>
+      <p>But there are other purposes.</p>
+    </section>
+
+    <section class="article-section" id="p1-reversed">
+      <h2><span class="sec-no mono">02</span>The Reversed Premise</h2>
+      <p>There are contexts — growing in number — where the phone must serve its user rather than its manufacturer. Where the device must be sovereign before it is connected. Where the records belong to the parties involved and to no one else.</p>
+      <p>A phone in Lusaka managing mobile money. An autonomous excavator in Mongolia. A hospital assistant in Lagos. A relay node on a spacecraft between Earth and Mars.<button class="note-ref mono" data-note="n2" aria-expanded="false">n.02</button></p>
+      <aside class="annotation" id="n2" hidden>
+        <p class="annotation-label mono">Context · Deployment Scenarios</p>
+        <p>ZAKO supports four deployment profiles from the Standard level: personal mobile (Zambia first), autonomous industrial (offline-first, power-governed), medical/institutional (health records with RESTRICT_FORWARD), and deep-space relay (light-speed latency, no Earth dependency). The Standard does not change. The distribution profile changes.</p>
+      </aside>
+      <p>ZAKO is built for those contexts. It doesn't argue the existing ecosystem is wrong. It argues the world contains purposes that require something it was not designed to provide.</p>
+    </section>
+
+    <section class="article-section" id="p1-ledgers">
+      <h2><span class="sec-no mono">03</span>Writing Was Invented for Ledgers</h2>
+      <p>The first writing systems were not literature. They were ledgers. Cuneiform tablets from Uruk, 3100 BCE. Grain allocations. Debt obligations. Writing was invented so exchange could be trusted across time and distance.<button class="note-ref mono" data-note="n3" aria-expanded="false">n.03</button></p>
+      <aside class="annotation" id="n3" hidden>
+        <p class="annotation-label mono">Context · Cuneiform Origins</p>
+        <p>The Uruk IV/III period (c. 3200–2900 BCE) produced the earliest known writing — overwhelmingly administrative: goods, personnel, land. The clay token system preceding cuneiform dates to ~8000 BCE. Writing emerged when token complexity exceeded physical management.</p>
+      </aside>
+      <p>The clay token preceded the word. The record preceded the story.</p>
+      <p>ZAKO is an attempt to build the next such substrate. An operating system whose primary purpose is to make exchange trustworthy, sovereign, and legible. Not a ledger application on a generic platform. A platform where the ledger <em>is</em> infrastructure.</p>
+      <p>That's the premise. Everything that follows is engineering.</p>
+    </section>
+
+    <section class="article-section" id="p1-lineage">
+      <h2><span class="sec-no mono">04</span>Lineage — What ZAKO Inherits</h2>
+      <h3>From Unix: The Composable Small Tool</h3>
+      <p>Systems composed of small, independently auditable, loosely coupled components are more robust than monolithic systems. ZAKO's power governor is a daemon. Its exchange layer is three separate processes. They can fail in isolation, and the system continues in a degraded but defined state.</p>
+      <h3>From Plan 9: The Namespace as Primitive</h3>
+      <p>Every process has its own private namespace. Plan 9's ideas propagated through Linux namespaces into Docker and Kubernetes.<button class="note-ref mono" data-note="n4" aria-expanded="false">n.04</button> ZAKO's Island model is Plan 9's namespace doctrine applied to group exchange.</p>
+      <aside class="annotation" id="n4" hidden>
+        <p class="annotation-label mono">Technical · Plan 9 → Containers</p>
+        <p>Plan 9 per-process namespaces (1992) → Linux CLONE_NEWNS (2002) → Linux namespaces (2006–2013) → Docker (2013) → Kubernetes (2014). ZAKO's Island model applies the same isolation insight to group exchange rather than process isolation.</p>
+      </aside>
+      <h3>From seL4: The Capability as Unforgeable Token</h3>
+      <p>Formally verified. Capability tokens: unforgeable, delegatable, revocable. No ambient authority.<button class="note-ref mono" data-note="n5" aria-expanded="false">n.05</button> ZAKO inherits sovereignty as capability — ed25519 keys backed by hardware.</p>
+      <aside class="annotation" id="n5" hidden>
+        <p class="annotation-label mono">Technical · Capability Model</p>
+        <p>The Sovereign's ed25519 key (TrustZone-backed) is the root capability. Island membership is a signed GRANT record (task_code=0x08). Delegation limited to 3 levels. Revocation (0x09) cascades immediately. No grace period. No ambient authority.</p>
+      </aside>
+      <h3>From CICS: The Transaction as Substrate</h3>
+      <p>IBM transaction monitors, continuous since the 1960s. Every operation commits or rolls back. Recorded before it executes. Durable. Reconstructible. ZAKO's exchange ledger aspires to this: not an application concern but an infrastructure property.</p>
+    </section>
+
+    <section class="article-section" id="p1-principles">
+      <h2><span class="sec-no mono">05</span>The Five Foundational Principles</h2>
+      <h3>Every Interaction Is a Record</h3>
+      <p>Something happened. State changed. Two sides exist. Both are recorded. Amendable but never deletable.</p>
+      <h3>Conservation at the Wire Level</h3>
+      <p>A batch that doesn't balance cannot be formed. Structural, not procedural. Five bytes for double-entry.<button class="note-ref mono" data-note="n6" aria-expanded="false">n.06</button></p>
+      <aside class="annotation" id="n6" hidden>
+        <p class="annotation-label mono">Technical · BitLedger 40-bit Format</p>
+        <p>Five bytes encode a complete double-entry transaction. Conservation is structural — the encoding makes imbalanced records impossible to construct. Three independent error detection: CRC-15, cross-layer mirroring, conservation invariant. Same format for money, energy, mass, data, time, service obligations.</p>
+      </aside>
+      <h3>Sovereignty Is the Design Constraint</h3>
+      <p>Records don't live on external servers. Identity doesn't come from third parties. Data doesn't leave without explicit sovereign action. ed25519 + TrustZone + W3C DIDs + capability grants.</p>
+      <h3>Offline-First Is Non-Negotiable</h3>
+      <p>Four channels: SMS, QR code, Bluetooth LE, IP. A device that requires the network has outsourced its sovereignty.</p>
+      <h3>Power Is a Sovereignty Property</h3>
+      <p>A device that cannot control power consumption cannot guarantee availability. Power events are records. The power budget is a ledger. Spacecraft discipline applied to phones.</p>
+    </section>
+
+    <section class="article-section" id="p1-architecture">
+      <h2><span class="sec-no mono">06</span>The Three-Layer Architecture</h2>
+      <h3>Bedrock</h3>
+      <p>Hardware and kernel. TrustZone, dm-verity, Telux-SEC LSM, hardware power gating. These aren't policies. They're physics.</p>
+      <h3>Submerged</h3>
+      <p>Outstack (power governor), Telux daemon triad (ledgerd, identd, sharedb), identity service. Reads from Bedrock, expresses policy upward.</p>
+      <h3>Visible</h3>
+      <p>Applications, telephony, natural language query. Built on AOSP. No Google Mobile Services. The surface serves its Sovereign.</p>
+    </section>
+
+    <section class="article-section" id="p1-roadmap">
+      <h2><span class="sec-no mono">07</span>The Roadmap Ahead</h2>
+      <p>The Babb Cat is the proving ground. Not a product yet. A laboratory. The experiments: boot on Zambian carriers, Outstack on real hardware, Telux on 2GB RAM, mobile money on live SIMs, the cover display as sovereignty surface.</p>
+      <p>Each experiment produces records. Each record feeds back. The architecture adapts. The sovereignty doesn't.</p>
+    </section>
+
+    <footer class="article-footer">
+      <p class="mono">PART I · THE PREMISE</p>
+      <p>Philosophy, lineage, principles, architecture. The foundation on which everything else is built.</p>
+      <p class="mono small">ZAKO Standard v1 · June 2026 · Babb</p>
+    </footer>
+  </main>
+
+  <!-- ===== PART II ===== -->
+  <main class="article article-page" id="part2" hidden>
+    <div class="part-divider"><span class="part-num mono">Part II</span><span class="part-title">The Engineering</span></div>
+
+    <section class="article-section" id="p2-bitpads">
+      <h2><span class="sec-no mono">08</span>BitPads: One Byte Tells You Everything</h2>
+      <p>Every ZAKO transmission starts with a single Meta byte. Before the receiver processes a single bit of payload, that byte declares what's coming.<button class="note-ref mono" data-note="n7" aria-expanded="false">n.07</button></p>
+      <aside class="annotation" id="n7" hidden>
+        <p class="annotation-label mono">Technical · Frame Type Encoding</p>
+        <p>Meta byte upper 2 bits: 00=Pure Signal, 01=Anonymous Wave, 10=Full Record, 11=Full BitLedger. Lower 6 bits carry priority, domain hints, continuation flags. Self-describing from byte one.</p>
+      </aside>
+      <table><thead><tr><th>Size</th><th>Frame</th><th>Use</th></tr></thead><tbody>
+        <tr><td>1 byte</td><td>Pure Signal</td><td>Heartbeat, daemon ACK, power alert</td></tr>
+        <tr><td>4 bytes</td><td>Anonymous Wave</td><td>Sensor readings, pictography</td></tr>
+        <tr><td>13–29 bytes</td><td>Full Record</td><td>Work records, journal, health</td></tr>
+        <tr><td>22–44+ bytes</td><td>Full BitLedger</td><td>Payments, exchanges, grants</td></tr>
+      </tbody></table>
+    </section>
+
+    <section class="article-section" id="p2-bitledger">
+      <h2><span class="sec-no mono">09</span>BitLedger: Five Bytes for Double-Entry</h2>
+      <p>40-bit double-entry. Five bytes for any conserved scalar exchange. Conservation enforced at encoding time — structurally impossible to form an imbalanced batch.<button class="note-ref mono" data-note="n8" aria-expanded="false">n.08</button></p>
+      <aside class="annotation" id="n8" hidden>
+        <p class="annotation-label mono">Technical · Conservation Enforcement</p>
+        <p>Three independent mechanisms: CRC-15, cross-layer direction/status mirroring, conservation invariant. Universal Domain extension: same 40-bit format for money, energy, mass, data, time, service. Domain declaration in session header changes semantics, not wire format.</p>
+      </aside>
+      <p>The same format for money, energy, mass, data volume, time, service obligations. The wire format is identical. Only the domain declaration changes what the bits mean.</p>
+    </section>
+
+    <section class="article-section" id="p2-record">
+      <h2><span class="sec-no mono">10</span>64 Verbs, 4096 Meanings</h2>
+      <p><strong>task_code</strong> (6 bits) × <strong>domain</strong> (2 bits) × <strong>account_pair</strong> (4 bits) = 4,096 distinct record semantics. One format for payments, work assignments, health readings, capability grants, power transitions, contract amendments, spacecraft telemetry.</p>
+      <p>And one bit for propagation: <strong>RESTRICT_FORWARD</strong>. Set it, the record does not leave the device. Sovereignty at the field level.</p>
+    </section>
+
+    <section class="article-section" id="p2-outstack">
+      <h2><span class="sec-no mono">11</span>Outstack — Power as Organizing Principle</h2>
+      <p>Not power management. The organizing principle of the entire runtime. Spacecraft discipline: every subsystem has a budget, graceful degradation by design.</p>
+      <h3>The Five Modes</h3>
+      <table><thead><tr><th>Mode</th><th>Battery</th><th>Behavior</th></tr></thead><tbody>
+        <tr><td>FULL</td><td>&gt;80%</td><td>No constraints</td></tr>
+        <tr><td>STANDARD</td><td>40–80%</td><td>OPPORTUNISTIC gated</td></tr>
+        <tr><td>CONSERVATION</td><td>20–40%</td><td>BACKGROUND paused</td></tr>
+        <tr><td>CRITICAL</td><td>5–20%</td><td>Only CRITICAL + INTERACTIVE</td></tr>
+        <tr><td>EMERGENCY</td><td>&lt;5%</td><td>Survival posture</td></tr>
+      </tbody></table>
+      <p>Hysteretic transitions. 3% band. No oscillation.<button class="note-ref mono" data-note="n9" aria-expanded="false">n.09</button></p>
+      <aside class="annotation" id="n9" hidden>
+        <p class="annotation-label mono">Technical · Babb Cat Implementation</p>
+        <p><code>outstack-powerd</code>: 60s battery poll, netlink uevents, cgroup hierarchy per class (CPU shares, memory limits, freezer). xattr-based class assignment, SELinux-protected. Lid sensor: flip closed → CONSERVE. eDRX: disabled → 5.12s → 10.24s → 20.48s → 40.96s. Target: 8mA idle = 72–108h standby from 1450mAh.</p>
+      </aside>
+      <h3>Execution Gating</h3>
+      <p>Every <code>exec()</code> evaluated by a Linux Security Module. Kernel boundary, not policy preference. A compromised process cannot escalate its class.</p>
+      <h3>Power Anomaly as Security</h3>
+      <p>Hardware power gating: Outstack removes power from peripheral domains. A WiFi chip without power cannot transmit. Physics, not policy.</p>
+    </section>
+
+    <section class="article-section" id="p2-telux">
+      <h2><span class="sec-no mono">12</span>Telux — The Exchange Layer</h2>
+      <p>A single device is a network. Same protocol at every scale — internal daemon communication uses the same wire format as cross-continent SMS payments.</p>
+      <h3>The Daemon Triad</h3>
+      <p><strong>telux-ledgerd</strong> (CRITICAL) — append-only, fsync before ACK, always.<button class="note-ref mono" data-note="n10" aria-expanded="false">n.10</button><br><strong>telux-identd</strong> (CRITICAL) — key custodian, refuses signing when locked.<br><strong>telux-sharedb</strong> (INTERACTIVE) — outbound channel selection.</p>
+      <aside class="annotation" id="n10" hidden>
+        <p class="annotation-label mono">Technical · Ledger Integrity</p>
+        <p>fsync() on SQLite WAL before ACK emission. No deferred write option. Chain hash: BLAKE3(frame_hash[n] || chain_hash[n-1]). Genesis: BLAKE3(frame_hash[0] || zeros_32). Tamper with one record and every subsequent hash breaks.</p>
+      </aside>
+      <h3>Islands and Sovereignty</h3>
+      <p>Six axioms. Constraints enforced at three tiers: VISIBLE (policy), SUBMERGED (cgroups), BEDROCK (kernel LSM). A BEDROCK constraint cannot be circumvented by software.</p>
+      <h3>Identity Chain</h3>
+      <p>ed25519 in TrustZone. W3C DIDs (<code>did:key:z6Mk...</code>). BLAKE3 chain hashes. Capability grants depth-limited to 3. Revocation cascades immediately.</p>
+    </section>
+
+    <section class="article-section" id="p2-services">
+      <h2><span class="sec-no mono">13</span>The Four Services</h2>
+      <h3>PADS — Field Records</h3>
+      <p>Up to 16 work Islands. INTERACTIVE for activity, BACKGROUND for sync. In Conservation, you can still fill out a form.</p>
+      <h3>Health — Conserved Quantities</h3>
+      <p>Blood pressure, glucose, weight, temperature. RESTRICT_FORWARD=1 on reproductive/mental health. Alerts always INTERACTIVE. Never deferred.</p>
+      <h3>Academy — Learning as Ledger</h3>
+      <p>XP from records, not mutable balances. Content via BLAKE3-addressed nodes. Streak miss = break.</p>
+      <h3>Agreements — Contracts as Records</h3>
+      <p>PROPOSE → ACCEPT → ACTIVE → COMPLETE → EXPIRE. Hosted Ledger Nodes for multi-party. CREATE → JOIN → AGREE.</p>
+    </section>
+
+    <section class="article-section" id="p2-hardware">
+      <h2><span class="sec-no mono">14</span>The Reference Hardware</h2>
+      <p>Cat S22 Flip. $99. QM215: 4× Cortex-A53 @ 1.4GHz. 2GB RAM, 16GB eMMC, 1450mAh. IP68. MIL-STD-810H.<button class="note-ref mono" data-note="n11" aria-expanded="false">n.11</button></p>
+      <aside class="annotation" id="n11" hidden>
+        <p class="annotation-label mono">Technical · Boot Chain &amp; Vendor</p>
+        <p>PBL (ROM) → SBL1 → RPM → aboot/LK → Linux 4.9. Orange state production path. ~2,900 vendor files, 56 firmware binaries, 27 HALs. Irreplaceable: Adreno 308 GPU, QMI modem, Keymaster 4.0. Discovery: Awinic AW881xx amplifier firmware. Boot partition: 32MB (not 64MB — one correct number worth significant time). Dynamic super: 8.5GB.</p>
+      </aside>
+      <p>Cover display (ST7789 SPI, 1.44"). Lid sensor → CONSERVE. T9 keypad with Bemba, Nyanja, Tonga, Lozi support. Custom IME — no existing Android T9 handles the required characters.</p>
+    </section>
+
+    <footer class="article-footer">
+      <p class="mono">PART II · THE ENGINEERING</p>
+      <p>Protocols, power governance, exchange layer, services, hardware. The machinery that makes the promises credible.</p>
+      <p class="mono small">ZAKO Standard v1 · June 2026 · Babb</p>
+    </footer>
+  </main>
+
+  <!-- ===== PART III ===== -->
+  <main class="article article-page" id="part3" hidden>
+    <div class="part-divider"><span class="part-num mono">Part III</span><span class="part-title">The Context</span></div>
+
+    <section class="article-section" id="p3-degoogle">
+      <h2><span class="sec-no mono">15</span>De-Googling — The Founding Decision</h2>
+      <p>Zero GMS packages. Zero GMS traffic — verified by packet capture. 60–120mW eliminated. All Google data transmission eliminated. The founding decision: remove the infrastructure, replace with Telux.<button class="note-ref mono" data-note="n12" aria-expanded="false">n.12</button></p>
+      <aside class="annotation" id="n12" hidden>
+        <p class="annotation-label mono">Technical · GMS Replacements</p>
+        <p><strong>Push:</strong> FCM → UnifiedPush + ntfy. <strong>Apps:</strong> Play Store → F-Droid (privileged, auditable). <strong>Location:</strong> Google FLP → AOSP GPS + Mozilla. <strong>Auth:</strong> Google Account → Telux DID. <strong>Maps:</strong> Organic Maps (offline, no telemetry). <strong>Attestation:</strong> HSM direct (narrower but honest).</p>
+      </aside>
+      <p>Every replacement follows one rule: more sovereign, not merely different.</p>
+    </section>
+
+    <section class="article-section" id="p3-zambia">
+      <h2><span class="sec-no mono">16</span>Zambia — The Design Center</h2>
+      <p>Not a test market. The design center. Mobile money is the primary financial infrastructure. Electricity irregular. Data expensive. No existing Android OS built for this context.<button class="note-ref mono" data-note="n13" aria-expanded="false">n.13</button></p>
+      <aside class="annotation" id="n13" hidden>
+        <p class="annotation-label mono">Context · Carriers &amp; Mobile Money</p>
+        <p>Airtel (Bands 3/7/8, *778#, VoLTE), Zamtel (Bands 7/40, *303#), MTN (Band 3, *112#). All within QM215 band set. STK kept alive — CRITICAL priority. USSD tested on live SIMs before every release. If mobile money doesn't work, the build doesn't ship.</p>
+      </aside>
+      <h3>Mobile Money as Primary Use Case</h3>
+      <p>STK and USSD at CRITICAL priority. A user with 5% battery can still check balance and send money. That's the requirement.</p>
+      <h3>Language and Input</h3>
+      <p><code>en_ZM</code>, <code>Africa/Lusaka</code>. T9 with Bemba, Nyanja, Tonga, Lozi. First-run: no external account creation. The device is yours from the first screen.</p>
+    </section>
+
+    <section class="article-section" id="p3-dist">
+      <h2><span class="sec-no mono">17</span>Distributions and Infrastructure</h2>
+      <p>ZAKO OS : Babb Cat :: Linux : Ubuntu. The Standard doesn't change. The implementation profile does.</p>
+      <h3>Infrastructure Roles</h3>
+      <p><strong>Personal Device</strong> — baseline, no obligations.<br><strong>Relay Node</strong> — forwards without storing.<br><strong>Ledger Node</strong> — hosted telux-ledgerd for newgroups, countersigns, total ordering.<br><strong>Content Node</strong> — BLAKE3-addressed CDN, cannot link requests to DIDs.</p>
+      <h3>Revenue</h3>
+      <p>Infrastructure fees on-ledger. Same conservation invariant as any other exchange.</p>
+    </section>
+
+    <section class="article-section" id="p3-contract">
+      <h2><span class="sec-no mono">18</span>The Performance Contract</h2>
+      <table><thead><tr><th>Code</th><th>Meaning</th><th>Examples</th></tr></thead><tbody>
+        <tr><td>FIXED</td><td>Cannot change</td><td>BLAKE3, ed25519, max 8 symbols</td></tr>
+        <tr><td>DIST</td><td>Build time</td><td>Carrier APNs, locale</td></tr>
+        <tr><td>DIST+SOV</td><td>Range + override</td><td>Power thresholds, timeouts</td></tr>
+        <tr><td>SOV</td><td>User adjustable</td><td>Personal preferences</td></tr>
+      </tbody></table>
+      <p>Ledger fsync before ACK: FIXED. Capability revocation immediate: FIXED. Hysteresis 3%: DIST+SOV. These are the contract.</p>
+    </section>
+
+    <section class="article-section" id="p3-open">
+      <h2><span class="sec-no mono">19</span>The Open Questions</h2>
+      <p><strong>AI Entity Identity</strong> — what does a DID point to when the entity changes with every training run?</p>
+      <p><strong>Sovereignty Succession</strong> — six types defined, edge cases in remote deployment remain.</p>
+      <p><strong>Cross-Island Federation</strong> — WireGuard-based, conflict resolution not fully specified.</p>
+      <p><strong>VoLTE</strong> — requires carrier provisioning, CSFB is baseline.</p>
+      <p><strong>Interplanetary</strong> — architecture supports it in principle, unproven at 20-minute delay.</p>
+    </section>
+
+    <section class="article-section" id="p3-claim">
+      <h2><span class="sec-no mono">20</span>The Claim</h2>
+      <p>Not a hobbyist alternative. Not privacy paranoia. A serious engineering project.</p>
+      <p>Sovereignty as engineering discipline. Conservation at the wire level. Power governance from aerospace. Identity from cryptographic first principles.</p>
+      <p class="isolated-line">The architecture does not change. The deployment profile changes. ZAKO adapts. The sovereignty does not.</p>
+      <p>A phone in Lusaka. An excavator in Mongolia. A hospital assistant in Lagos. A relay node between Earth and Mars. Same protocol. Same conservation. Same sovereignty.</p>
+    </section>
+
+    <footer class="article-footer">
+      <p class="mono">ZAKO · A SOVEREIGN MOBILE OPERATING SYSTEM</p>
+      <p>48 source documents. One architecture. The Babb Cat experiments begin.</p>
+      <p class="mono small">ZAKO Standard v1 · June 2026 · Babb</p>
+    </footer>
+  </main>
+
+  <!-- RIGHT RAIL -->
+  <aside class="rail rail-right" aria-label="Source corpus">
+    <p class="rail-title mono">Source Corpus</p>
+    <div class="src-group">
+      <p class="src-head mono">I · Core Architecture</p>
+      <ul class="src-list">
+        <li><span>ZAKO Architecture and Vision <span class="src-note">Founding document · May 2026</span></span></li>
+        <li><span>ZAKO Standard v1 <span class="src-note">Protocol definitions</span></span></li>
+        <li><span>Wire Conventions v1 <span class="src-note">Separators, compounds</span></span></li>
+        <li><span>Codebook Standard v1 <span class="src-note">64 task codes</span></span></li>
+        <li><span>Pictography Standard v1 <span class="src-note">4-bit symbols</span></span></li>
+        <li><span>Performance Constants v1 <span class="src-note">FIXED / DIST / SOV</span></span></li>
+        <li><span>Infrastructure Profile v1 <span class="src-note">Nodes, federation</span></span></li>
+      </ul>
+    </div>
+    <div class="src-group">
+      <p class="src-head mono">II · Protocols</p>
+      <ul class="src-list">
+        <li><span>Outstack Protocol v1 <span class="src-note">Power governance</span></span></li>
+        <li><span>Telux Protocol v1 <span class="src-note">Exchange layer</span></span></li>
+        <li><span>SIMBA Standard v1 <span class="src-note">AI entity integration</span></span></li>
+      </ul>
+    </div>
+    <div class="src-group">
+      <p class="src-head mono">III · Services</p>
+      <ul class="src-list">
+        <li><span>PADS Service v1 <span class="src-note">Field records</span></span></li>
+        <li><span>Health Service v1 <span class="src-note">Vital signs</span></span></li>
+        <li><span>Academy Service v1 <span class="src-note">Learning ledger</span></span></li>
+        <li><span>Agreements Service v1 <span class="src-note">Contracts</span></span></li>
+      </ul>
+    </div>
+    <div class="src-group">
+      <p class="src-head mono">IV · Hardware</p>
+      <ul class="src-list">
+        <li><span>Babb Cat Implementation Plan <span class="src-note">Cat S22 Flip</span></span></li>
+        <li><span>Architecture Briefing <span class="src-note">Technical overview</span></span></li>
+        <li><span>Zambia Briefing <span class="src-note">Carriers, mobile money</span></span></li>
+      </ul>
+    </div>
+    <div class="src-group">
+      <p class="src-head mono">V · Research</p>
+      <ul class="src-list">
+        <li><span>Outstack Research <span class="src-note">9 documents</span></span></li>
+        <li><span>Telux Research <span class="src-note">3 documents</span></span></li>
+        <li><span>Distributions <span class="src-note">7 documents</span></span></li>
+      </ul>
+    </div>
+    <div class="rail-foot mono"><p>48 documents total.<br>Every claim traces to source.</p></div>
+  </aside>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

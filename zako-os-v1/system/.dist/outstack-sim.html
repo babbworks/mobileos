@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZAKO OS — Outstack Power Drain Simulator</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'SF Mono', 'Fira Code', monospace; background: #0a0a0f; color: #c0c0d0; min-height: 100vh; }
+.container { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+
+header { text-align: center; padding: 1rem 0; border-bottom: 1px solid #1a1a2e; margin-bottom: 1rem; }
+header h1 { font-size: 1.3rem; font-weight: 400; letter-spacing: 0.1em; color: #fff; }
+header .sub { font-size: 0.7rem; color: #5a5a7a; margin-top: 0.3rem; }
+
+.top-bar { display: flex; justify-content: center; gap: 1rem; margin-bottom: 1rem; align-items: center; flex-wrap: wrap; }
+.btn { background: #1a2a3a; border: 1px solid #2a3a4a; color: #4ecdc4; padding: 0.4rem 1rem; border-radius: 0.4rem; cursor: pointer; font-family: inherit; font-size: 0.75rem; transition: all 0.2s; }
+.btn:hover { background: #2a3a4a; border-color: #4ecdc4; }
+.btn.danger { color: #ff6b6b; border-color: #3a2020; }
+.btn.danger:hover { border-color: #ff6b6b; }
+.btn.warn { color: #dcac4e; border-color: #3a3020; }
+.btn.warn:hover { border-color: #dcac4e; }
+.btn.active { background: #1a3a2a; border-color: #4ecdc4; box-shadow: 0 0 8px #4ecdc420; }
+.speed-ctl { display: flex; align-items: center; gap: 0.4rem; font-size: 0.7rem; color: #6a6a8a; }
+.speed-ctl input { width: 70px; }
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+  <h1>OUTSTACK POWER DRAIN SIMULATOR</h1>
+  <div class="sub">5-Mode State Machine · Hysteresis · Thermal Override · Charging Override</div>
+</header>
+
+<div class="top-bar">
+  <button class="btn" id="btn-run">▶ Run</button>
+  <button class="btn" id="btn-pause">⏸ Pause</button>
+  <button class="btn" id="btn-reset">↺ Reset</button>
+  <button class="btn warn" id="btn-charge">⚡ Plug Charger</button>
+  <button class="btn danger" id="btn-thermal">☀ Thermal Event</button>
+  <div class="speed-ctl">
+    <span>Drain:</span>
+    <input type="range" id="drain-rate" min="1" max="20" value="8">
+    <span id="drain-label">0.8%/s</span>
+  </div>
+</div>
+
+<div class="main-layout">
+  <!-- Left: Device + Battery -->
+  <div class="device-panel">
+    <div class="battery-shell">
+      <div class="battery-cap"></div>
+      <div class="battery-body">
+        <div class="battery-fill" id="batt-fill"></div>
+        <div class="battery-pct" id="batt-pct">100%</div>
+      </div>
+    </div>
+    <div class="device-info">
+      <div class="info-row"><span class="info-label">Mode</span><span class="info-value" id="mode-display">FULL</span></div>
+      <div class="info-row"><span class="info-label">Temp</span><span class="info-value" id="temp-display">30°C</span></div>
+      <div class="info-row"><span class="info-label">Charging</span><span class="info-value" id="charge-display">NO</span></div>
+      <div class="info-row"><span class="info-label">Gate Mask</span><span class="info-value" id="gate-display">0x00</span></div>
+    </div>
+    <!-- Process classes -->
+    <div class="processes">
+      <div class="proc-title">PROCESS CLASSES</div>
+      <div class="proc" id="proc-critical"><span class="proc-dot active"></span>CRITICAL</div>
+      <div class="proc" id="proc-interactive"><span class="proc-dot active"></span>INTERACTIVE</div>
+      <div class="proc" id="proc-background"><span class="proc-dot active"></span>BACKGROUND</div>
+      <div class="proc" id="proc-deferred"><span class="proc-dot active"></span>DEFERRED</div>
+      <div class="proc" id="proc-opportunistic"><span class="proc-dot active"></span>OPPORTUNISTIC</div>
+    </div>
+    <!-- CPU cores -->
+    <div class="cores">
+      <div class="proc-title">CPU CORES</div>
+      <div class="core-grid">
+        <div class="core active" id="core-0">0</div>
+        <div class="core active" id="core-1">1</div>
+        <div class="core active" id="core-2">2</div>
+        <div class="core active" id="core-3">3</div>
+      </div>
+      <div class="governor" id="governor">schedutil · 1.4GHz</div>
+    </div>
+  </div>
+
+  <!-- Center: State Machine + Mode Bar -->
+  <div class="center-panel">
+    <div class="mode-bar">
+      <div class="mode-seg" id="seg-full">FULL<br><span class="thresh">&gt;50%</span></div>
+      <div class="mode-seg" id="seg-std">STD<br><span class="thresh">21-50%</span></div>
+      <div class="mode-seg" id="seg-cons">CONS<br><span class="thresh">11-20%</span></div>
+      <div class="mode-seg" id="seg-crit">CRIT<br><span class="thresh">4-10%</span></div>
+      <div class="mode-seg" id="seg-emrg">EMRG<br><span class="thresh">≤3%</span></div>
+    </div>
+    <div class="hysteresis-bar">
+      <div class="hyst-fill" id="hyst-fill"></div>
+      <div class="hyst-marker" id="hyst-marker"></div>
+      <div class="hyst-labels">
+        <span>0%</span><span>3%</span><span>10%</span><span>20%</span><span>50%</span><span>100%</span>
+      </div>
+    </div>
+    <div class="thermal-gauge" id="thermal-section">
+      <div class="therm-title">THERMAL</div>
+      <div class="therm-bar">
+        <div class="therm-fill" id="therm-fill"></div>
+        <div class="therm-crit-line"></div>
+        <div class="therm-safe-line"></div>
+      </div>
+      <div class="therm-labels"><span>20°C</span><span>40°C safe</span><span>45°C crit</span><span>60°C</span></div>
+      <div class="therm-sustain" id="therm-sustain"></div>
+    </div>
+    <!-- Evaluation log -->
+    <div class="eval-log-title">STATE MACHINE EVALUATION LOG</div>
+    <div class="eval-log" id="eval-log"></div>
+  </div>
+
+  <!-- Right: Register Map + C0 Signals -->
+  <div class="register-panel">
+    <div class="reg-title">SYSFS REGISTER MAP</div>
+    <div class="reg-log" id="reg-log"></div>
+    <div class="reg-title" style="margin-top:1rem;">C0 SIGNALS EMITTED</div>
+    <div class="c0-log" id="c0-log"></div>
+    <div class="reg-title" style="margin-top:1rem;">STATS</div>
+    <div class="stats-block" id="stats-block">
+      <div>Transitions: <span id="stat-trans">0</span></div>
+      <div>Thermal overrides: <span id="stat-therm">0</span></div>
+      <div>Charge overrides: <span id="stat-charge">0</span></div>
+      <div>Elapsed: <span id="stat-time">0s</span></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<style>
+.main-layout { display: grid; grid-template-columns: 250px 1fr 300px; gap: 1rem; min-height: 75vh; }
+
+.device-panel { background: #0d0d18; border: 1px solid #1e1e35; border-radius: 0.75rem; padding: 1rem; }
+.battery-shell { display: flex; flex-direction: column; align-items: center; margin-bottom: 1rem; }
+.battery-cap { width: 20px; height: 6px; background: #2a2a3a; border-radius: 2px 2px 0 0; }
+.battery-body { width: 60px; height: 120px; border: 2px solid #3a3a5a; border-radius: 4px; position: relative; overflow: hidden; }
+.battery-fill { position: absolute; bottom: 0; left: 0; right: 0; background: #4ecdc4; transition: height 0.3s, background 0.5s; height: 100%; }
+.battery-fill.low { background: #dcac4e; }
+.battery-fill.critical { background: #ff6b6b; }
+.battery-fill.charging { background: #6ddc4e; }
+.battery-pct { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 0.8rem; font-weight: 700; color: #fff; text-shadow: 0 0 4px #000; z-index: 1; }
+
+.device-info { margin-bottom: 1rem; }
+.info-row { display: flex; justify-content: space-between; padding: 0.25rem 0; font-size: 0.7rem; border-bottom: 1px solid #1a1a2e; }
+.info-label { color: #6a6a8a; }
+.info-value { color: #4ecdc4; font-weight: 500; }
+
+.processes { margin-bottom: 1rem; }
+.proc-title { font-size: 0.65rem; color: #6a6a8a; margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.proc { font-size: 0.7rem; padding: 0.2rem 0.4rem; margin: 0.15rem 0; border-radius: 0.2rem; display: flex; align-items: center; gap: 0.4rem; transition: all 0.4s; }
+.proc.frozen { background: #1a1a2e; color: #4a4a6a; text-decoration: line-through; }
+.proc-dot { width: 8px; height: 8px; border-radius: 50%; transition: all 0.4s; }
+.proc-dot.active { background: #4ecdc4; box-shadow: 0 0 4px #4ecdc4; }
+.proc-dot.frozen { background: #3a3a5a; box-shadow: none; }
+
+.cores { }
+.core-grid { display: flex; gap: 0.4rem; margin-top: 0.3rem; }
+.core { width: 2rem; height: 2rem; border-radius: 0.3rem; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 600; transition: all 0.4s; }
+.core.active { background: #1a3a2a; color: #4ecdc4; border: 1px solid #2a4a3a; }
+.core.parked { background: #1a1a1a; color: #3a3a3a; border: 1px solid #2a2a2a; }
+.governor { font-size: 0.65rem; color: #6a6a8a; margin-top: 0.4rem; }
+
+.center-panel { background: #0d0d18; border: 1px solid #1e1e35; border-radius: 0.75rem; padding: 1rem; display: flex; flex-direction: column; }
+.mode-bar { display: flex; border-radius: 0.4rem; overflow: hidden; height: 2.5rem; margin-bottom: 0.75rem; }
+.mode-seg { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 600; transition: all 0.3s; opacity: 0.3; }
+.mode-seg.active { opacity: 1; transform: scale(1.05); }
+.mode-seg .thresh { font-size: 0.5rem; font-weight: 400; opacity: 0.7; }
+#seg-full { background: #1a4a2a; color: #4ecdc4; }
+#seg-std { background: #1a3a47; color: #4e8cdc; }
+#seg-cons { background: #2a2a47; color: #8c4edc; }
+#seg-crit { background: #3a1a2a; color: #dc4e6a; }
+#seg-emrg { background: #3a0a0a; color: #ff4444; }
+
+.hysteresis-bar { position: relative; height: 1.5rem; background: #1a1a2e; border-radius: 0.3rem; margin-bottom: 0.5rem; overflow: visible; }
+.hyst-fill { position: absolute; top: 0; left: 0; bottom: 0; background: #4ecdc420; border-radius: 0.3rem; transition: width 0.3s; }
+.hyst-marker { position: absolute; top: -2px; bottom: -2px; width: 3px; background: #fff; border-radius: 2px; transition: left 0.3s; box-shadow: 0 0 6px #fff; }
+.hyst-labels { display: flex; justify-content: space-between; font-size: 0.55rem; color: #4a4a6a; margin-top: 0.2rem; padding: 0 0.2rem; }
+
+.thermal-gauge { margin: 0.75rem 0; padding: 0.5rem; background: #12121f; border-radius: 0.4rem; }
+.therm-title { font-size: 0.6rem; color: #6a6a8a; margin-bottom: 0.3rem; }
+.therm-bar { position: relative; height: 1rem; background: linear-gradient(90deg, #1a3a2a, #3a3a1a 60%, #3a1a1a); border-radius: 0.2rem; overflow: visible; }
+.therm-fill { position: absolute; top: 0; left: 0; bottom: 0; width: 25%; background: #4ecdc440; border-radius: 0.2rem; transition: width 0.3s; }
+.therm-crit-line { position: absolute; top: -2px; bottom: -2px; left: 62.5%; width: 2px; background: #ff4444; }
+.therm-safe-line { position: absolute; top: -2px; bottom: -2px; left: 50%; width: 2px; background: #dcac4e; }
+.therm-labels { display: flex; justify-content: space-between; font-size: 0.5rem; color: #4a4a6a; margin-top: 0.2rem; }
+.therm-sustain { font-size: 0.6rem; color: #dcac4e; margin-top: 0.3rem; min-height: 1em; }
+
+.eval-log-title { font-size: 0.65rem; color: #6a6a8a; margin: 0.75rem 0 0.3rem; text-transform: uppercase; }
+.eval-log { flex: 1; overflow-y: auto; font-size: 0.6rem; line-height: 1.6; max-height: 280px; background: #08080f; border-radius: 0.3rem; padding: 0.5rem; }
+.eval-entry { padding: 0.2rem 0.4rem; margin-bottom: 0.2rem; border-radius: 0.2rem; }
+.eval-entry.normal { color: #6a6a8a; }
+.eval-entry.transition { background: #1a2a1a; color: #4ecdc4; border-left: 2px solid #4ecdc4; }
+.eval-entry.thermal { background: #2a1a1a; color: #ff6b6b; border-left: 2px solid #ff6b6b; }
+.eval-entry.charge { background: #1a2a1a; color: #6ddc4e; border-left: 2px solid #6ddc4e; }
+.eval-entry.override { background: #2a2a1a; color: #dcac4e; border-left: 2px solid #dcac4e; }
+
+.register-panel { background: #0d0d18; border: 1px solid #1e1e35; border-radius: 0.75rem; padding: 1rem; display: flex; flex-direction: column; overflow: hidden; }
+.reg-title { font-size: 0.65rem; color: #6a6a8a; text-transform: uppercase; margin-bottom: 0.3rem; }
+.reg-log, .c0-log { font-size: 0.58rem; line-height: 1.6; overflow-y: auto; max-height: 150px; background: #08080f; border-radius: 0.3rem; padding: 0.4rem; }
+.reg-entry { color: #dcac4e; margin-bottom: 0.15rem; }
+.reg-entry .path { color: #6a6a8a; }
+.reg-entry .val { color: #4ecdc4; }
+.c0-entry { color: #8c4edc; margin-bottom: 0.15rem; }
+.stats-block { font-size: 0.7rem; color: #8a8aa0; line-height: 1.8; }
+.stats-block span { color: #4ecdc4; font-weight: 600; }
+</style>
+
+<script>
+// === Outstack Power State Machine Simulator ===
+const MODES = ['FULL', 'STANDARD', 'CONSERVATION', 'CRITICAL', 'EMERGENCY'];
+const MODE_COLORS = ['#4ecdc4', '#4e8cdc', '#8c4edc', '#dc4e6a', '#ff4444'];
+const THRESHOLDS = { STD: 50, CONS: 20, LOW: 10, SHUT: 3 };
+const HYSTERESIS = 3;
+const THERMAL_CRIT = 45, THERMAL_SAFE = 40;
+const THERMAL_ENTER_S = 60, THERMAL_EXIT_S = 120;
+const FAST_CHARGE_MW = 10000, CHARGE_FULL_BATT = 30;
+
+const GATE_MASKS = [0x00, 0x01, 0x07, 0x07, 0x0F];
+const GOVERNORS = ['schedutil · 1.4GHz', 'schedutil · 1.4GHz', 'schedutil · 1.0GHz', 'powersave · 800MHz', 'powersave · 800MHz'];
+const CORES_ONLINE = [4, 4, 4, 2, 1];
+
+let state = { mode: 0, battery: 100, temp: 30, charging: false, chargeRate: 15000,
+              thermalOverride: false, thermalSustain: 0, thermalAbove: false,
+              running: false, elapsed: 0, transitions: 0, thermalOverrides: 0, chargeOverrides: 0 };
+let interval = null;
+
+// DOM refs
+const battFill = document.getElementById('batt-fill');
+const battPct = document.getElementById('batt-pct');
+const modeDisp = document.getElementById('mode-display');
+const tempDisp = document.getElementById('temp-display');
+const chargeDisp = document.getElementById('charge-display');
+const gateDisp = document.getElementById('gate-display');
+const govDisp = document.getElementById('governor');
+const evalLog = document.getElementById('eval-log');
+const regLog = document.getElementById('reg-log');
+const c0Log = document.getElementById('c0-log');
+const hystMarker = document.getElementById('hyst-marker');
+const thermFill = document.getElementById('therm-fill');
+const thermSustain = document.getElementById('therm-sustain');
+
+function rawBatteryMode(pct) {
+  if (pct <= THRESHOLDS.SHUT) return 4;
+  if (pct <= THRESHOLDS.LOW) return 3;
+  if (pct <= THRESHOLDS.CONS) return 2;
+  if (pct <= THRESHOLDS.STD) return 1;
+  return 0;
+}
+
+function upwardThreshold(mode) {
+  switch(mode) {
+    case 4: return THRESHOLDS.SHUT + HYSTERESIS;
+    case 3: return THRESHOLDS.LOW + HYSTERESIS;
+    case 2: return THRESHOLDS.CONS + HYSTERESIS;
+    case 1: return THRESHOLDS.STD + HYSTERESIS;
+    default: return 100;
+  }
+}
+
+function addEval(text, cls) {
+  const d = document.createElement('div');
+  d.className = 'eval-entry ' + (cls || 'normal');
+  d.textContent = `[${state.elapsed}s] ${text}`;
+  evalLog.appendChild(d);
+  evalLog.scrollTop = evalLog.scrollHeight;
+}
+
+function addReg(path, val) {
+  const d = document.createElement('div');
+  d.className = 'reg-entry';
+  d.innerHTML = `<span class="path">${path}</span> ← <span class="val">${val}</span>`;
+  regLog.appendChild(d);
+  regLog.scrollTop = regLog.scrollHeight;
+}
+
+function addC0(byte, meaning) {
+  const d = document.createElement('div');
+  d.className = 'c0-entry';
+  d.textContent = `0x${byte.toString(16).padStart(2,'0')} — ${meaning}`;
+  c0Log.appendChild(d);
+  c0Log.scrollTop = c0Log.scrollHeight;
+}
+
+function transitionTo(newMode, reason) {
+  const old = state.mode;
+  state.mode = newMode;
+  state.transitions++;
+  
+  addEval(`TRANSITION: ${MODES[old]} → ${MODES[newMode]} [${reason}]`, 
+    reason.includes('thermal') ? 'thermal' : reason.includes('charge') ? 'charge' : 'transition');
+  
+  // C0 signal
+  const c0Codes = [0x11, 0x12, 0x13, 0x14, 0x94]; // DC1-DC4, DC4+Priority
+  addC0(c0Codes[newMode], `MODE_ENTER: ${MODES[newMode]}`);
+  
+  // Register writes
+  addReg(`scaling_governor`, GOVERNORS[newMode].split(' · ')[0]);
+  addReg(`scaling_max_freq`, GOVERNORS[newMode].split(' · ')[1]);
+  const coresToPark = 4 - CORES_ONLINE[newMode];
+  if (coresToPark > 0) {
+    for (let i = 3; i >= CORES_ONLINE[newMode]; i--) {
+      addReg(`cpu${i}/online`, '0 (parked)');
+    }
+  }
+  addReg(`outstack_*/freezer.state`, `gate_mask=0x${GATE_MASKS[newMode].toString(16).padStart(2,'0')}`);
+  
+  updateUI();
+}
+
+function evaluate() {
+  state.elapsed++;
+  const pct = state.battery;
+  const temp = state.temp;
+  
+  // Thermal override check
+  if (!state.thermalOverride) {
+    if (temp >= THERMAL_CRIT) {
+      if (!state.thermalAbove) { state.thermalAbove = true; state.thermalSustain = 0; }
+      state.thermalSustain++;
+      if (state.thermalSustain >= THERMAL_ENTER_S) {
+        state.thermalOverride = true;
+        state.thermalOverrides++;
+        if (state.mode !== 4) {
+          transitionTo(4, 'thermal override (sustained ' + temp + '°C > 45°C for 60s)');
+        }
+        return;
+      }
+    } else {
+      state.thermalAbove = false;
+      state.thermalSustain = 0;
+    }
+  } else {
+    if (temp < THERMAL_SAFE) {
+      state.thermalSustain++;
+      if (state.thermalSustain >= THERMAL_EXIT_S) {
+        state.thermalOverride = false;
+        state.thermalAbove = false;
+        state.thermalSustain = 0;
+        const recoverMode = rawBatteryMode(pct);
+        if (recoverMode !== state.mode) {
+          transitionTo(recoverMode, 'thermal recovery (temp < 40°C for 120s, batt=' + pct + '%)');
+        }
+        addEval('Thermal override cleared', 'thermal');
+        return;
+      }
+    } else {
+      state.thermalSustain = 0;
+    }
+    return; // skip normal eval while in thermal override
+  }
+
+  // Battery-driven evaluation
+  const target = rawBatteryMode(pct);
+  if (target > state.mode) {
+    transitionTo(target, 'battery ' + pct + '% crossed floor');
+  } else if (target < state.mode) {
+    const up = upwardThreshold(state.mode);
+    if (pct > up) {
+      transitionTo(state.mode - 1, 'battery ' + pct + '% > hysteresis ' + up + '%');
+    }
+  }
+
+  // Charging override
+  if (state.charging && state.chargeRate >= FAST_CHARGE_MW && state.mode !== 4) {
+    const battMode = rawBatteryMode(pct);
+    let overrideTarget;
+    if (pct > CHARGE_FULL_BATT) {
+      overrideTarget = 0;
+    } else {
+      overrideTarget = Math.max(0, battMode - 1);
+      if (overrideTarget === 0) overrideTarget = 1; // cap: rule 1 can't reach FULL
+    }
+    if (state.mode > overrideTarget) {
+      state.chargeOverrides++;
+      transitionTo(overrideTarget, 'charge override (rate=' + state.chargeRate + 'mW, batt=' + pct + '%)');
+    }
+  }
+}
+
+function updateUI() {
+  // Battery
+  battFill.style.height = state.battery + '%';
+  battPct.textContent = Math.round(state.battery) + '%';
+  battFill.className = 'battery-fill' + 
+    (state.charging ? ' charging' : state.battery <= 10 ? ' critical' : state.battery <= 20 ? ' low' : '');
+  
+  // Info
+  modeDisp.textContent = MODES[state.mode];
+  modeDisp.style.color = MODE_COLORS[state.mode];
+  tempDisp.textContent = state.temp + '°C';
+  tempDisp.style.color = state.temp >= 45 ? '#ff4444' : state.temp >= 40 ? '#dcac4e' : '#4ecdc4';
+  chargeDisp.textContent = state.charging ? 'YES (' + state.chargeRate + 'mW)' : 'NO';
+  chargeDisp.style.color = state.charging ? '#6ddc4e' : '#6a6a8a';
+  gateDisp.textContent = '0x' + GATE_MASKS[state.mode].toString(16).padStart(2, '0');
+  govDisp.textContent = GOVERNORS[state.mode];
+  
+  // Mode bar
+  document.querySelectorAll('.mode-seg').forEach((el, i) => {
+    el.classList.toggle('active', i === state.mode);
+  });
+  
+  // Hysteresis marker
+  hystMarker.style.left = state.battery + '%';
+  
+  // Thermal
+  const thermPct = Math.min(100, Math.max(0, (state.temp - 20) / 40 * 100));
+  thermFill.style.width = thermPct + '%';
+  if (state.thermalOverride) {
+    thermSustain.textContent = state.temp < THERMAL_SAFE ? 
+      `Recovery: ${state.thermalSustain}/${THERMAL_EXIT_S}s below safe` :
+      'THERMAL OVERRIDE ACTIVE';
+  } else if (state.thermalAbove) {
+    thermSustain.textContent = `Sustain: ${state.thermalSustain}/${THERMAL_ENTER_S}s above critical`;
+  } else {
+    thermSustain.textContent = '';
+  }
+  
+  // Process classes
+  const mask = GATE_MASKS[state.mode];
+  setProc('proc-opportunistic', !(mask & 0x01));
+  setProc('proc-deferred', !(mask & 0x02));
+  setProc('proc-background', !(mask & 0x04));
+  setProc('proc-interactive', !(mask & 0x08));
+  setProc('proc-critical', true); // never gated
+  
+  // Cores
+  for (let i = 0; i < 4; i++) {
+    const el = document.getElementById('core-' + i);
+    const online = i < CORES_ONLINE[state.mode];
+    el.className = 'core ' + (online ? 'active' : 'parked');
+  }
+  
+  // Stats
+  document.getElementById('stat-trans').textContent = state.transitions;
+  document.getElementById('stat-therm').textContent = state.thermalOverrides;
+  document.getElementById('stat-charge').textContent = state.chargeOverrides;
+  document.getElementById('stat-time').textContent = state.elapsed + 's';
+}
+
+function setProc(id, active) {
+  const el = document.getElementById(id);
+  const dot = el.querySelector('.proc-dot');
+  el.classList.toggle('frozen', !active);
+  dot.classList.toggle('active', active);
+  dot.classList.toggle('frozen', !active);
+}
+
+function tick() {
+  const drainRate = parseInt(document.getElementById('drain-rate').value) / 10;
+  document.getElementById('drain-label').textContent = drainRate.toFixed(1) + '%/s';
+  
+  if (state.charging) {
+    state.battery = Math.min(100, state.battery + drainRate * 1.5);
+  } else {
+    state.battery = Math.max(0, state.battery - drainRate);
+  }
+  
+  evaluate();
+  updateUI();
+  
+  if (state.battery <= 0 && !state.charging) {
+    addEval('SHUTDOWN — battery depleted', 'thermal');
+    stop();
+  }
+}
+
+function start() { if (!interval) { state.running = true; interval = setInterval(tick, 1000); } }
+function stop() { state.running = false; if (interval) { clearInterval(interval); interval = null; } }
+function reset() {
+  stop();
+  state = { mode: 0, battery: 100, temp: 30, charging: false, chargeRate: 15000,
+            thermalOverride: false, thermalSustain: 0, thermalAbove: false,
+            running: false, elapsed: 0, transitions: 0, thermalOverrides: 0, chargeOverrides: 0 };
+  evalLog.innerHTML = ''; regLog.innerHTML = ''; c0Log.innerHTML = '';
+  updateUI();
+}
+
+document.getElementById('btn-run').addEventListener('click', start);
+document.getElementById('btn-pause').addEventListener('click', stop);
+document.getElementById('btn-reset').addEventListener('click', reset);
+document.getElementById('btn-charge').addEventListener('click', () => {
+  state.charging = !state.charging;
+  document.getElementById('btn-charge').classList.toggle('active', state.charging);
+  addEval(state.charging ? 'Charger connected (15W USB-C PD)' : 'Charger disconnected', 'charge');
+  if (state.charging) addReg('/sys/class/power_supply/usb/online', '1');
+  else addReg('/sys/class/power_supply/usb/online', '0');
+  updateUI();
+});
+document.getElementById('btn-thermal').addEventListener('click', () => {
+  if (state.temp < 46) { state.temp = 46; addEval('☀ Thermal event: temp → 46°C', 'thermal'); }
+  else { state.temp = 30; state.thermalSustain = 0; addEval('Temp returning to 30°C', 'normal'); }
+  document.getElementById('btn-thermal').classList.toggle('active', state.temp >= 45);
+  updateUI();
+});
+
+// Init
+updateUI();
+</script>
+</body>
+</html>

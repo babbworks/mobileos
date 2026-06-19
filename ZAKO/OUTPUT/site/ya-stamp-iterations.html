@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ya! — Stamp Iterations</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Syne:wght@400;700;800&family=Black+Ops+One&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:     #0E0D0B;
+      --amber:  #D98B18;
+      --amber2: #F5A830;
+      --amberdk:#9B6010;
+      --surface:#1A1814;
+      --rule:   #2A2820;
+      --text:   #EDE8DC;
+      --muted:  #5A5548;
+    }
+
+    body {
+      background: var(--bg);
+      font-family: 'Syne', sans-serif;
+      padding: 0;
+      min-height: 100vh;
+    }
+
+    /* ─── PAGE HEADER ─── */
+    .page-header {
+      padding: 40px 56px 32px;
+      border-bottom: 1px solid var(--rule);
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+    .page-header .brand {
+      font-size: 11px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: 6px;
+    }
+    .page-header h1 {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+    .page-header .note {
+      font-size: 12px;
+      color: var(--muted);
+      max-width: 280px;
+      text-align: right;
+      line-height: 1.5;
+    }
+
+    /* ─── STAMP GRID ─── */
+    .stamps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+    }
+
+    .stamp-cell {
+      border-right: 1px solid var(--rule);
+      border-bottom: 1px solid var(--rule);
+    }
+    .stamp-cell:nth-child(3n) { border-right: none; }
+
+    .stamp-surface {
+      width: 100%;
+      aspect-ratio: 5/4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .stamp-surface svg {
+      width: 85%;
+      height: 85%;
+    }
+
+    /* Surface textures */
+    .s-concrete {
+      background:
+        radial-gradient(ellipse 70% 70% at 30% 40%, #1E1C18 0%, #0E0D0B 100%);
+    }
+    .s-plate {
+      background:
+        radial-gradient(ellipse 60% 60% at 60% 50%, #181714 0%, #0A0908 100%);
+    }
+    .s-paper {
+      background:
+        radial-gradient(ellipse 80% 80% at 50% 50%, #F0E8D4 0%, #D4C8A8 100%);
+    }
+    .s-amber {
+      background:
+        radial-gradient(ellipse 70% 70% at 50% 40%, #C07818 0%, #7A4A08 100%);
+    }
+    .s-dark {
+      background: #0A0908;
+    }
+    .s-iron {
+      background:
+        radial-gradient(ellipse 60% 60% at 40% 40%, #1C1C20 0%, #0C0C10 100%);
+    }
+
+    .stamp-label {
+      padding: 14px 20px 18px;
+      border-top: 1px solid var(--rule);
+    }
+    .sl-num {
+      font-size: 9px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: 3px;
+    }
+    .sl-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 3px;
+      letter-spacing: -0.01em;
+    }
+    .sl-desc {
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    @media (max-width: 900px) {
+      .stamps { grid-template-columns: repeat(2, 1fr); }
+      .stamp-cell:nth-child(3n) { border-right: 1px solid var(--rule); }
+      .stamp-cell:nth-child(2n) { border-right: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-header">
+  <div>
+    <div class="brand">ZAKO · Ya! · First Edition</div>
+    <h1>Stamp Iterations</h1>
+  </div>
+  <div class="note">Thick, bold, billboard-readable. Impressed into surface. Six executions of one idea.</div>
+</div>
+
+<div class="stamps">
+
+  <!-- ═══════════════════════════════════
+       01 — ROUND BRAND
+       Hot-branded into dark plate
+  ════════════════════════════════════ -->
+  <div class="stamp-cell">
+    <div class="stamp-surface s-plate">
+      <svg viewBox="0 0 400 340" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <!-- Deboss filter: letters sunk into surface -->
+          <filter id="f-deboss-1" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="3.5" result="blur"/>
+            <feOffset dx="-2" dy="-2.5" in="blur" result="hi-blur"/>
+            <feOffset dx="2.5" dy="3" in="blur" result="sh-blur"/>
+            <feFlood flood-color="#F5C870" flood-opacity="0.28" result="hi-color"/>
+            <feFlood flood-color="#000000" flood-opacity="0.7" result="sh-color"/>
+            <feComposite in="hi-color" in2="hi-blur" operator="in" result="hi"/>
+            <feComposite in="sh-color" in2="sh-blur" operator="in" result="sh"/>
+            <feMerge>
+              <feMergeNode in="sh"/>
+              <feMergeNode in="SourceGraphic"/>
+              <feMergeNode in="hi"/>
+            </feMerge>
+          </filter>
+          <!-- Glow for hot brand effect -->
+          <filter id="f-glow-1" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="g1"/>
+            <feGaussianBlur in="SourceGraphic" stdDeviation="20" result="g2"/>
+            <feMerge>
+              <feMergeNode in="g2"/>
+              <feMergeNode in="g1"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+          <!-- Radial surface gradient -->
+          <radialGradient id="plate-grad" cx="50%" cy="45%" r="50%">
+            <stop offset="0%" stop-color="#2A2820"/>
+            <stop offset="100%" stop-color="#0C0B09"/>
+          </radialGradient>
+        </defs>
+
+        <!-- Surface plate -->
+        <circle cx="200" cy="170" r="158" fill="url(#plate-grad)"/>
+
+        <!-- Heavy border ring — OUTER -->
+        <circle cx="200" cy="170" r="156" fill="none" stroke="#D98B18" stroke-width="7" filter="url(#f-deboss-1)"/>
+        <!-- INNER border ring -->
+        <circle cx="200" cy="170" r="140" fill="none" stroke="#D98B18" stroke-width="3" filter="url(#f-deboss-1)" opacity="0.7"/>
+
+        <!-- Top arc: ZAKO -->
+        <defs>
+          <path id="arc-top-1" d="M 72,170 A 128,128 0 0,1 328,170"/>
+          <path id="arc-bot-1" d="M 88,215 A 128,128 0 0,0 312,215"/>
+        </defs>
+        <text font-family="'Anton', sans-serif" font-size="16" letter-spacing="10" fill="#D98B18" filter="url(#f-deboss-1)">
+          <textPath href="#arc-top-1" startOffset="10%">ZAKO · FIRST EDITION</textPath>
+        </text>
+        <text font-family="'Anton', sans-serif" font-size="13" letter-spacing="6" fill="#D98B18" filter="url(#f-deboss-1)" opacity="0.75">
+          <textPath href="#arc-bot-1" startOffset="18%">CAT S22 · 2026</textPath>
+        </text>
+
+        <!-- Separator dots -->
+        <circle cx="200" cy="47" r="5" fill="#D98B18" filter="url(#f-deboss-1)" opacity="0.8"/>
+        <circle cx="200" cy="293" r="4" fill="#D98B18" filter="url(#f-deboss-1)" opacity="0.6"/>
+        <circle cx="58" cy="170" r="4" fill="#D98B18" filter="url(#f-deboss-1)" opacity="0.6"/>
+        <circle cx="342" cy="170" r="4" fill="#D98B18" filter="url(#f-deboss-1)" opacity="0.6"/>
+
+        <!-- Ya! — large, hot-branded -->
+        <text x="200" y="200"
+          font-family="'Anton', sans-serif"
+          font-size="108"
+          text-anchor="middle"
+          fill="#E09A28"
+          filter="url(#f-deboss-1)">Ya!</text>
+
+        <!-- Heat glow behind the letters -->
+        <text x="200" y="200"
+          font-family="'Anton', sans-serif"
+          font-size="108"
+          text-anchor="middle"
+          fill="#F5B840"
+          filter="url(#f-glow-1)"
+          opacity="0.15">Ya!</text>
+      </svg>
+    </div>
+    <div class="stamp-label">
+      <div class="sl-num">Iteration 01</div>
+      <div class="sl-name">Round Brand</div>
+      <div class="sl-desc">Circular seal, debossed into dark plate. Anton — the heaviest readable weight. Hot-brand glow at the letter edges.</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════
+       02 — FREIGHT STAMP
+       Industrial rectangle, billbaord-loud
+  ════════════════════════════════════ -->
+  <div class="stamp-cell">
+    <div class="stamp-surface s-concrete">
+      <svg viewBox="0 0 400 280" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="f-deboss-2" x="-10%" y="-10%" width="120%" height="120%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="4" result="blur"/>
+            <feOffset dx="-2.5" dy="-3" in="blur" result="hi-blur"/>
+            <feOffset dx="3" dy="4" in="blur" result="sh-blur"/>
+            <feFlood flood-color="#FFDD90" flood-opacity="0.22" result="hi-color"/>
+            <feFlood flood-color="#000" flood-opacity="0.85" result="sh-color"/>
+            <feComposite in="hi-color" in2="hi-blur" operator="in" result="hi"/>
+            <feComposite in="sh-color" in2="sh-blur" operator="in" result="sh"/>
+            <feMerge>
+              <feMergeNode in="sh"/>
+              <feMergeNode in="SourceGraphic"/>
+              <feMergeNode in="hi"/>
+            </feMerge>
+          </filter>
+          <filter id="f-noise-2">
+            <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" result="noise"/>
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.2" xChannelSelector="R" yChannelSelector="G"/>
+          </filter>
+          <radialGradient id="rect-surf" cx="40%" cy="40%" r="60%">
+            <stop offset="0%" stop-color="#252318"/>
+            <stop offset="100%" stop-color="#0E0D0B"/>
+          </radialGradient>
+        </defs>
+
+        <!-- Rectangle stamp body -->
+        <rect x="24" y="28" width="352" height="224" rx="4" fill="url(#rect-surf)"/>
+
+        <!-- Triple border — thick stamp frame -->
+        <rect x="24" y="28" width="352" height="224" rx="4" fill="none" stroke="#D98B18" stroke-width="9" filter="url(#f-deboss-2)"/>
+        <rect x="38" y="42" width="324" height="196" rx="2" fill="none" stroke="#D98B18" stroke-width="2" filter="url(#f-deboss-2)" opacity="0.5"/>
+
+        <!-- Top label band -->
+        <rect x="24" y="28" width="352" height="40" rx="4" fill="#D98B18" opacity="0.0"/>
+        <line x1="38" y1="68" x2="362" y2="68" stroke="#D98B18" stroke-width="2" filter="url(#f-deboss-2)" opacity="0.5"/>
+
+        <!-- ZAKO header text -->
+        <text x="200" y="59"
+          font-family="'Syne', sans-serif"
+          font-size="13"
+          font-weight="800"
+          text-anchor="middle"
+          letter-spacing="12"
+          fill="#D98B18"
+          filter="url(#f-deboss-2)">Z A K O</text>
+
+        <!-- MASSIVE Ya! — the whole point -->
+        <text x="200" y="190"
+          font-family="'Anton', sans-serif"
+          font-size="142"
+          text-anchor="middle"
+          fill="#D98B18"
+          filter="url(#f-deboss-2)">Ya!</text>
+
+        <!-- Bottom reference line -->
+        <line x1="38" y1="213" x2="362" y2="213" stroke="#D98B18" stroke-width="1.5" filter="url(#f-deboss-2)" opacity="0.4"/>
+        <text x="42" y="228"
+          font-family="'Space Mono', monospace"
+          font-size="9.5"
+          fill="#D98B18"
+          opacity="0.5"
+          filter="url(#f-deboss-2)">CAT-S22</text>
+        <text x="358" y="228"
+          font-family="'Space Mono', monospace"
+          font-size="9.5"
+          text-anchor="end"
+          fill="#D98B18"
+          opacity="0.5"
+          filter="url(#f-deboss-2)">FIRST EDITION · 2026</text>
+      </svg>
+    </div>
+    <div class="stamp-label">
+      <div class="sl-num">Iteration 02</div>
+      <div class="sl-name">Freight Stamp</div>
+      <div class="sl-desc">Industrial rectangle. Triple border frame. Ya! at maximum scale — the word fills the container. Reads at any distance.</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════
+       03 — DEBOSSED PURE
+       No container — letters pressed directly into surface
+  ════════════════════════════════════ -->
+  <div class="stamp-cell">
+    <div class="stamp-surface s-plate">
+      <svg viewBox="0 0 400 280" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <!-- Strong deboss — deep impression -->
+          <filter id="f-pure-deboss" x="-15%" y="-15%" width="130%" height="130%">
+            <!-- Shadow (bottom-right, darker) -->
+            <feGaussianBlur in="SourceAlpha" stdDeviation="5" result="blur"/>
+            <feOffset dx="4" dy="5" in="blur" result="sh-pos"/>
+            <feFlood flood-color="#000000" flood-opacity="0.9" result="sh-color"/>
+            <feComposite in="sh-color" in2="sh-pos" operator="in" result="shadow"/>
+            <!-- Highlight (top-left, lighter) -->
+            <feOffset dx="-3" dy="-4" in="blur" result="hi-pos"/>
+            <feFlood flood-color="#D4A84090" flood-opacity="0.35" result="hi-color"/>
+            <feComposite in="hi-color" in2="hi-pos" operator="in" result="highlight"/>
+            <!-- Merge: shadow behind, source, highlight on top -->
+            <feMerge>
+              <feMergeNode in="shadow"/>
+              <feMergeNode in="SourceGraphic"/>
+              <feMergeNode in="highlight"/>
+            </feMerge>
+          </filter>
+          <radialGradient id="deep-plate" cx="45%" cy="40%" r="55%">
+            <stop offset="0%" stop-color="#201F1C"/>
+            <stop offset="100%" stop-color="#0A0908"/>
+          </radialGradient>
+        </defs>
+
+        <!-- Surface -->
+        <rect x="0" y="0" width="400" height="280" fill="url(#deep-plate)"/>
+
+        <!-- The letters are pressed INTO the surface — they are the surface color, darker -->
+        <!-- Shadow layer first (behind) -->
+        <text x="200" y="196"
+          font-family="'Anton', sans-serif"
+          font-size="168"
+          text-anchor="middle"
+          fill="#0A0908"
+          opacity="0.0">Ya!</text>
+
+        <!-- Main impressed letters -->
+        <text x="200" y="198"
+          font-family="'Anton', sans-serif"
+          font-size="168"
+          text-anchor="middle"
+          fill="#131210"
+          filter="url(#f-pure-deboss)">Ya!</text>
+
+        <!-- Ultra-thin ZAKO overline — the only amber element -->
+        <line x1="72" y1="52" x2="328" y2="52" stroke="#D98B18" stroke-width="1.5" opacity="0.4"/>
+        <text x="200" y="47"
+          font-family="'Syne', sans-serif"
+          font-size="9.5"
+          font-weight="700"
+          text-anchor="middle"
+          letter-spacing="8"
+          fill="#D98B18"
+          opacity="0.5">ZAKO</text>
+        <line x1="72" y1="244" x2="328" y2="244" stroke="#D98B18" stroke-width="1.5" opacity="0.25"/>
+        <text x="200" y="257"
+          font-family="'Space Mono', monospace"
+          font-size="8"
+          text-anchor="middle"
+          letter-spacing="5"
+          fill="#D98B18"
+          opacity="0.3">FIRST EDITION · CAT S22</text>
+      </svg>
+    </div>
+    <div class="stamp-label">
+      <div class="sl-num">Iteration 03</div>
+      <div class="sl-name">Pure Impression</div>
+      <div class="sl-desc">No container — the letters are pressed directly into the plate. Highlight top-left, shadow bottom-right. The surface is the logo.</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════
+       04 — INK STAMP (AMBER ON PAPER)
+       Classic red-stamp energy, reversed to amber
+  ════════════════════════════════════ -->
+  <div class="stamp-cell">
+    <div class="stamp-surface s-paper">
+      <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <!-- Ink bleed: slight noise at letter edges -->
+          <filter id="f-inkbleed" x="-5%" y="-5%" width="110%" height="110%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" result="noise"/>
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.5" xChannelSelector="R" yChannelSelector="G" result="displaced"/>
+            <feGaussianBlur in="displaced" stdDeviation="0.4" result="soft"/>
+            <feMerge>
+              <feMergeNode in="soft"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+          <filter id="f-ink-press" x="-5%" y="-5%" width="110%" height="110%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" result="noise"/>
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.8" xChannelSelector="R" yChannelSelector="G"/>
+          </filter>
+        </defs>
+
+        <!-- Paper surface is the background gradient (defined by .s-paper) -->
+
+        <!-- Stamp circle outer ring -->
+        <circle cx="200" cy="150" r="132" fill="none" stroke="#B86E00" stroke-width="10" filter="url(#f-inkbleed)" opacity="0.85"/>
+        <!-- Stamp circle inner ring -->
+        <circle cx="200" cy="150" r="118" fill="none" stroke="#B86E00" stroke-width="4" filter="url(#f-ink-press)" opacity="0.7"/>
+
+        <!-- Arc text paths -->
+        <defs>
+          <path id="top-arc-4" d="M 78,150 A 122,122 0 0,1 322,150"/>
+          <path id="bot-arc-4" d="M 96,212 A 122,122 0 0,0 304,212"/>
+        </defs>
+        <text font-family="'Black Ops One', cursive" font-size="14.5" letter-spacing="5.5" fill="#B86E00" filter="url(#f-inkbleed)" opacity="0.8">
+          <textPath href="#top-arc-4" startOffset="8%">ZAKO · FIRST EDITION</textPath>
+        </text>
+        <text font-family="'Black Ops One', cursive" font-size="12" letter-spacing="4" fill="#B86E00" filter="url(#f-inkbleed)" opacity="0.65">
+          <textPath href="#bot-arc-4" startOffset="22%">CAT S22 · 2026</textPath>
+        </text>
+
+        <!-- Divider stars -->
+        <text x="200" y="38" text-anchor="middle" font-size="12" fill="#B86E00" opacity="0.7" filter="url(#f-ink-press)">✦</text>
+        <text x="200" y="274" text-anchor="middle" font-size="10" fill="#B86E00" opacity="0.55" filter="url(#f-ink-press)">✦</text>
+
+        <!-- Ya! — amber ink on paper, heavy with ink bleed -->
+        <text x="200" y="192"
+          font-family="'Anton', sans-serif"
+          font-size="110"
+          text-anchor="middle"
+          fill="#9A5E08"
+          filter="url(#f-ink-press)"
+          opacity="0.15">Ya!</text>
+        <text x="200" y="192"
+          font-family="'Anton', sans-serif"
+          font-size="110"
+          text-anchor="middle"
+          fill="#B87010"
+          filter="url(#f-inkbleed)">Ya!</text>
+      </svg>
+    </div>
+    <div class="stamp-label">
+      <div class="sl-num">Iteration 04</div>
+      <div class="sl-name">Ink on Paper</div>
+      <div class="sl-desc">Traditional rubber stamp with ink bleed. SVG noise filter simulates uneven ink saturation at letter edges. Amber on aged stock.</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════
+       05 — SHIELD / OCTAGON STAMP
+       Official mark, military-grade authority
+  ════════════════════════════════════ -->
+  <div class="stamp-cell">
+    <div class="stamp-surface s-iron">
+      <svg viewBox="0 0 400 320" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="f-iron-deboss" x="-12%" y="-12%" width="124%" height="124%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="3.5" result="blur"/>
+            <feOffset dx="-2.5" dy="-3" in="blur" result="hi-blur"/>
+            <feOffset dx="3" dy="4" in="blur" result="sh-blur"/>
+            <feFlood flood-color="#C8A060" flood-opacity="0.3" result="hi-color"/>
+            <feFlood flood-color="#000" flood-opacity="0.75" result="sh-color"/>
+            <feComposite in="hi-color" in2="hi-blur" operator="in" result="hi"/>
+            <feComposite in="sh-color" in2="sh-blur" operator="in" result="sh"/>
+            <feMerge>
+              <feMergeNode in="sh"/>
+              <feMergeNode in="SourceGraphic"/>
+              <feMergeNode in="hi"/>
+            </feMerge>
+          </filter>
+          <radialGradient id="iron-surf" cx="40%" cy="35%" r="55%">
+            <stop offset="0%" stop-color="#22222A"/>
+            <stop offset="100%" stop-color="#0C0C12"/>
+          </radialGradient>
+          <!-- Octagon clip -->
+          <clipPath id="oct-clip">
+            <polygon points="155,18 245,18 318,72 342,162 318,252 245,306 155,306 82,252 58,162 82,72"/>
+          </clipPath>
+        </defs>
+
+        <!-- Surface -->
+        <polygon points="155,18 245,18 318,72 342,162 318,252 245,306 155,306 82,252 58,162 82,72"
+          fill="url(#iron-surf)"/>
+
+        <!-- OUTER octagon — thick stamp border -->
+        <polygon points="155,18 245,18 318,72 342,162 318,252 245,306 155,306 82,252 58,162 82,72"
+          fill="none"
+          stroke="#D98B18"
+          stroke-width="10"
+          filter="url(#f-iron-deboss)"/>
+        <!-- INNER hairline octagon -->
+        <polygon points="163,32 237,32 304,82 326,162 304,242 237,292 163,292 96,242 74,162 96,82"
+          fill="none"
+          stroke="#D98B18"
+          stroke-width="2"
+          filter="url(#f-iron-deboss)"
+          opacity="0.45"/>
+
+        <!-- Corner dot marks at each vertex of inner oct -->
+        <circle cx="200" cy="32" r="4" fill="#D98B18" filter="url(#f-iron-deboss)" opacity="0.7"/>
+        <circle cx="304" cy="82" r="3" fill="#D98B18" filter="url(#f-iron-deboss)" opacity="0.6"/>
+        <circle cx="326" cy="162" r="3" fill="#D98B18" filter="url(#f-iron-deboss)" opacity="0.6"/>
+        <circle cx="200" cy="292" r="3" fill="#D98B18" filter="url(#f-iron-deboss)" opacity="0.6"/>
+        <circle cx="96" cy="82" r="3" fill="#D98B18" filter="url(#f-iron-deboss)" opacity="0.6"/>
+        <circle cx="74" cy="162" r="3" fill="#D98B18" filter="url(#f-iron-deboss)" opacity="0.6"/>
+
+        <!-- ZAKO top banner -->
+        <text x="200" y="82"
+          font-family="'Syne', sans-serif"
+          font-size="13"
+          font-weight="800"
+          text-anchor="middle"
+          letter-spacing="9"
+          fill="#D98B18"
+          filter="url(#f-iron-deboss)">ZAKO</text>
+
+        <!-- Horizontal rule -->
+        <line x1="104" y1="96" x2="296" y2="96" stroke="#D98B18" stroke-width="2" filter="url(#f-iron-deboss)" opacity="0.5"/>
+
+        <!-- Ya! — occupies the majority of the mark -->
+        <text x="200" y="220"
+          font-family="'Anton', sans-serif"
+          font-size="130"
+          text-anchor="middle"
+          fill="#D98B18"
+          filter="url(#f-iron-deboss)">Ya!</text>
+
+        <!-- Bottom rule + edition -->
+        <line x1="104" y1="232" x2="296" y2="232" stroke="#D98B18" stroke-width="1.5" filter="url(#f-iron-deboss)" opacity="0.4"/>
+        <text x="200" y="254"
+          font-family="'Space Mono', monospace"
+          font-size="9"
+          text-anchor="middle"
+          letter-spacing="4"
+          fill="#D98B18"
+          filter="url(#f-iron-deboss)"
+          opacity="0.55">FIRST ED. · CAT S22</text>
+      </svg>
+    </div>
+    <div class="stamp-label">
+      <div class="sl-num">Iteration 05</div>
+      <div class="sl-name">Iron Octagon</div>
+      <div class="sl-desc">Eight-sided stamp mark — authority, precision, field equipment. Heavy border impressed into iron-dark surface. Vertex dots as registration marks.</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════
+       06 — AMBER BLOCK INVERT
+       Positive/negative — raised from amber surface
+  ════════════════════════════════════ -->
+  <div class="stamp-cell">
+    <div class="stamp-surface s-amber">
+      <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="f-raise" x="-10%" y="-10%" width="120%" height="120%">
+            <!-- Raised (embossed) effect: shadow bottom-right, highlight top-left -->
+            <feGaussianBlur in="SourceAlpha" stdDeviation="4" result="blur"/>
+            <feOffset dx="3" dy="4" in="blur" result="sh-blur"/>
+            <feOffset dx="-3" dy="-4" in="blur" result="hi-blur"/>
+            <feFlood flood-color="#000000" flood-opacity="0.5" result="sh-color"/>
+            <feFlood flood-color="#FFF" flood-opacity="0.35" result="hi-color"/>
+            <feComposite in="sh-color" in2="sh-blur" operator="in" result="shadow"/>
+            <feComposite in="hi-color" in2="hi-blur" operator="in" result="highlight"/>
+            <feMerge>
+              <feMergeNode in="shadow"/>
+              <feMergeNode in="SourceGraphic"/>
+              <feMergeNode in="highlight"/>
+            </feMerge>
+          </filter>
+          <radialGradient id="amber-surf" cx="40%" cy="35%" r="60%">
+            <stop offset="0%" stop-color="#D08820"/>
+            <stop offset="100%" stop-color="#7A4808"/>
+          </radialGradient>
+        </defs>
+
+        <!-- Amber surface background -->
+        <rect x="0" y="0" width="400" height="300" fill="url(#amber-surf)"/>
+
+        <!-- Circle stamp — cut from the amber surface -->
+        <circle cx="200" cy="150" r="132" fill="none" stroke="#5A3204" stroke-width="9" filter="url(#f-raise)"/>
+        <circle cx="200" cy="150" r="118" fill="none" stroke="#5A3204" stroke-width="3" filter="url(#f-raise)" opacity="0.6"/>
+
+        <!-- Arc paths for text -->
+        <defs>
+          <path id="top-arc-6" d="M 76,150 A 124,124 0 0,1 324,150"/>
+          <path id="bot-arc-6" d="M 94,213 A 124,124 0 0,0 306,213"/>
+        </defs>
+        <text font-family="'Anton', sans-serif" font-size="14" letter-spacing="6" fill="#4A2A04" filter="url(#f-raise)" opacity="0.8">
+          <textPath href="#top-arc-6" startOffset="9%">ZAKO · FIRST EDITION</textPath>
+        </text>
+        <text font-family="'Anton', sans-serif" font-size="12" letter-spacing="5" fill="#4A2A04" filter="url(#f-raise)" opacity="0.65">
+          <textPath href="#bot-arc-6" startOffset="21%">CAT S22 · 2026</textPath>
+        </text>
+
+        <!-- Diamond separators -->
+        <polygon points="200,31 205,40 200,49 195,40" fill="#4A2A04" filter="url(#f-raise)" opacity="0.7"/>
+        <polygon points="200,268 205,277 200,286 195,277" fill="#4A2A04" filter="url(#f-raise)" opacity="0.55"/>
+
+        <!-- Ya! raised FROM amber surface — dark on amber = raised/embossed -->
+        <text x="200" y="196"
+          font-family="'Anton', sans-serif"
+          font-size="112"
+          text-anchor="middle"
+          fill="#3E2204"
+          filter="url(#f-raise)">Ya!</text>
+      </svg>
+    </div>
+    <div class="stamp-label">
+      <div class="sl-num">Iteration 06</div>
+      <div class="sl-name">Amber Raised</div>
+      <div class="sl-desc">Inverted: dark letters raised from an amber ground. The only version where the stamp reads as embossed rather than debossed. Ceremonial weight.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Bottom notes -->
+<div style="padding: 32px 56px; border-top: 1px solid var(--rule); display: flex; justify-content: space-between; align-items: flex-end;">
+  <div>
+    <div style="font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--amber); margin-bottom: 8px;">Type notes</div>
+    <div style="font-size: 12px; color: var(--muted); line-height: 1.7;">
+      All iterations use <span style="color: var(--text);">Anton</span> — the heaviest readable weight available.<br>
+      <span style="color: var(--text);">Black Ops One</span> used in Iteration 04 for authentic stamp character.<br>
+      Deboss/raise effects are SVG filter composites — no raster images.
+    </div>
+  </div>
+  <div style="font-size: 11px; color: var(--muted); text-align: right; line-height: 1.7;">
+    <span style="color: var(--text);">Ya!</span> — go in Bemba<br>
+    First Edition · ZAKO · Cat S22<br>
+    2026
+  </div>
+</div>
+
+</body>
+</html>
