@@ -1,6 +1,7 @@
 #include "oware_engine.h"
 #include "oware_test.h"
 #include <string.h>
+#include <stdlib.h>
 
 static void test_init(void) {
     oware_state_t s;
@@ -62,9 +63,9 @@ static void test_sow_skip_origin(void) {
     oware_state_t out; oware_move_result_t res;
     CHECK(oware__simulate_for_test(&s, &r, 0u, &out, &res));
     CHECK(out.houses[0] == 0u);          /* origin emptied and skipped */
-    CHECK(out.houses[1] == 5u);          /* every other house +1 */
-    CHECK(out.houses[11] == 5u);
-    CHECK(res.landing == 11u);           /* 12th seed lands in house 11, not 0 */
+    CHECK(out.houses[11] == 5u);         /* houses 1-11 each get one seed on lap 1 */
+    CHECK(out.houses[1] == 6u);          /* house 1 also gets the 12th seed (wraps past skipped origin) */
+    CHECK(res.landing == 1u);            /* last seed placed at house 1 after skipping origin */
 }
 
 static void test_capture_simple(void) {
@@ -311,6 +312,29 @@ static void test_resolve_agreed(void) {
     CHECK(res.score[1] == 24u);
 }
 
+static void test_conservation_random_selfplay(void) {
+    oware_rules_t r;
+    oware_rules_default(&r);
+    for (int game = 0; game < 200; game++) {
+        oware_state_t s;
+        oware_init(&s);
+        srand((unsigned)game + 1u);
+        for (int ply = 0; ply < 300; ply++) {
+            oware_result_t over;
+            if (oware_is_over(&s, &r, &over)) { break; }
+            uint8_t mv[OWARE_SIDE];
+            int n = oware_legal_moves(&s, &r, mv);
+            if (n == 0) { break; }
+            oware_move_result_t mr;
+            CHECK(oware_apply_move(&s, &r, mv[rand() % n], &mr));
+            /* invariant: nothing created or destroyed, ever */
+            CHECK(oware_board_seeds(&s) + (int)s.score[0] + (int)s.score[1] == 48);
+            /* scores never exceed total */
+            CHECK((int)s.score[0] + (int)s.score[1] <= 48);
+        }
+    }
+}
+
 int main(void) {
     test_init();
     test_ownership();
@@ -323,5 +347,6 @@ int main(void) {
     test_apply_move(); test_apply_rejects_illegal(); test_apply_capture_resets_cycle();
     test_over_first_to_n(); test_over_no_move_collects(); test_over_cycle_split();
     test_resolve_agreed();
+    test_conservation_random_selfplay();
     TEST_REPORT();
 }

@@ -67,19 +67,14 @@ static bool oware_simulate(const oware_state_t *s, const oware_rules_t *r,
     uint8_t seeds = out->houses[house];
     out->houses[house] = 0u;
     uint8_t i = house;
-    uint8_t last_placed = house;
     while (seeds > 0u) {
         i = (uint8_t)((i + 1u) % OWARE_HOUSES);
-        if (i == house) {
-            seeds--;                             /* origin counts as a position but receives no seed */
-            continue;
-        }
+        if (i == house) { continue; }            /* skip origin on wrap; seeds unchanged */
         out->houses[i] = (uint8_t)(out->houses[i] + 1u);
-        last_placed = i;
         seeds--;
     }
 
-    res->landing = last_placed;
+    res->landing = i;
     res->captured = 0u;
     res->was_grand_slam = false;
     res->forced_feed = false;
@@ -87,7 +82,7 @@ static bool oware_simulate(const oware_state_t *s, const oware_rules_t *r,
     /* provisional capture chain: walk backward over opponent houses */
     uint8_t cap_idx[OWARE_SIDE];
     uint8_t cap_count = 0u;
-    uint8_t j = last_placed;
+    uint8_t j = i;
     for (;;) {
         if (oware_house_belongs_to(j, p)) { break; }          /* own side */
         if (!oware_capturable(out->houses[j], r->capture_rule)) { break; }
