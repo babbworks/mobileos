@@ -97,11 +97,55 @@ static bool oware_simulate(const oware_state_t *s, const oware_rules_t *r,
         j = (j == 0u) ? (uint8_t)(OWARE_HOUSES - 1u) : (uint8_t)(j - 1u);
     }
 
-    /* (grand-slam handling arrives in Task 5; for now capture normally) */
+    /* detect grand slam: would the capture empty the opponent's whole side? */
+    uint8_t opp = (uint8_t)(p ^ 1u);
+    int cap_total = 0;
     for (uint8_t c = 0; c < cap_count; c++) {
-        out->score[p] = (uint8_t)(out->score[p] + out->houses[cap_idx[c]]);
-        res->captured = (uint8_t)(res->captured + out->houses[cap_idx[c]]);
-        out->houses[cap_idx[c]] = 0u;
+        cap_total += (int)out->houses[cap_idx[c]];
+    }
+    int opp_total = oware_side_seeds(out, opp);
+    bool grand_slam = (cap_count > 0u) && (cap_total == opp_total);
+    res->was_grand_slam = grand_slam;
+
+    if (cap_count == 0u) {
+        return true;
+    }
+
+    if (!grand_slam) {
+        for (uint8_t c = 0; c < cap_count; c++) {
+            out->score[p] = (uint8_t)(out->score[p] + out->houses[cap_idx[c]]);
+            res->captured = (uint8_t)(res->captured + out->houses[cap_idx[c]]);
+            out->houses[cap_idx[c]] = 0u;
+        }
+        return true;
+    }
+
+    switch (r->grandslam_rule) {
+        case OWARE_GS_NO_CAPTURE:
+            break;                       /* seeds stay sown; capture nothing */
+        case OWARE_GS_FORBIDDEN:
+            break;                       /* legality enforced in legal_moves */
+        case OWARE_GS_OPPONENT_KEEPS:
+            for (uint8_t c = 0; c < cap_count; c++) {
+                out->score[p] = (uint8_t)(out->score[p] + out->houses[cap_idx[c]]);
+                res->captured = (uint8_t)(res->captured + out->houses[cap_idx[c]]);
+                out->houses[cap_idx[c]] = 0u;
+            }
+            for (uint8_t k = 0; k < OWARE_HOUSES; k++) {
+                out->score[opp] = (uint8_t)(out->score[opp] + out->houses[k]);
+                out->houses[k] = 0u;
+            }
+            break;
+        case OWARE_GS_LEAVE_LAST:
+            /* cap_idx is ordered landing-first; furthest-back is last entry */
+            for (uint8_t c = 0; (c + 1u) < cap_count; c++) {
+                out->score[p] = (uint8_t)(out->score[p] + out->houses[cap_idx[c]]);
+                res->captured = (uint8_t)(res->captured + out->houses[cap_idx[c]]);
+                out->houses[cap_idx[c]] = 0u;
+            }
+            break;
+        default:
+            break;
     }
     return true;
 }

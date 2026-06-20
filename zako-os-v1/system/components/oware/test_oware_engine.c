@@ -74,6 +74,7 @@ static void test_capture_simple(void) {
     memset(s.houses, 0, sizeof(s.houses));
     s.houses[5] = 1u;   /* play this 1 seed -> lands in house 6 */
     s.houses[6] = 2u;   /* becomes 3 -> captured */
+    s.houses[7] = 1u;   /* extra seed so this is not a grand slam */
     oware_state_t out; oware_move_result_t res;
     CHECK(oware__simulate_for_test(&s, &r, 5u, &out, &res));
     CHECK(res.landing == 6u);
@@ -90,6 +91,7 @@ static void test_capture_chained(void) {
     s.houses[6] = 1u;   /* ->2 captured */
     s.houses[7] = 2u;   /* ->3 captured */
     s.houses[8] = 1u;   /* ->2 captured (landing) */
+    s.houses[9] = 1u;   /* extra seed so this is not a grand slam */
     oware_state_t out; oware_move_result_t res;
     CHECK(oware__simulate_for_test(&s, &r, 5u, &out, &res));
     CHECK(res.landing == 8u);
@@ -123,6 +125,7 @@ static void test_capture_three_four(void) {
     memset(s.houses, 0, sizeof(s.houses));
     s.houses[5] = 1u;
     s.houses[6] = 3u;   /* ->4 captured under {3,4}; NOT under {2,3} */
+    s.houses[7] = 1u;   /* extra seed so this is not a grand slam */
     oware_state_t out; oware_move_result_t res;
     CHECK(oware__simulate_for_test(&s, &r, 5u, &out, &res));
     CHECK(res.captured == 4u);
@@ -137,6 +140,62 @@ static void test_capture_three_four(void) {
     CHECK(res.captured == 0u);
 }
 
+/* Build a position where player 0's move would capture ALL of player 1's seeds.
+   Player 1 owns 6..11. Put a single capturable seed only in house 6, rest empty. */
+static void setup_grandslam(oware_state_t *s) {
+    oware_init(s);
+    memset(s->houses, 0, sizeof(s->houses));
+    s->turn = 0u;
+    s->houses[5] = 1u;   /* lands in 6 */
+    s->houses[6] = 2u;   /* ->3, and it's the only opponent seed -> grand slam */
+}
+
+static void test_grandslam_no_capture(void) {
+    oware_state_t s; oware_rules_t r;
+    setup_grandslam(&s); oware_rules_default(&r);
+    r.grandslam_rule = OWARE_GS_NO_CAPTURE;
+    oware_state_t out; oware_move_result_t res;
+    CHECK(oware__simulate_for_test(&s, &r, 5u, &out, &res));
+    CHECK(res.was_grand_slam);
+    CHECK(res.captured == 0u);       /* nothing captured */
+    CHECK(out.houses[6] == 3u);      /* seeds remain sown */
+    CHECK(out.score[0] == 0u);
+}
+
+static void test_grandslam_opponent_keeps(void) {
+    oware_state_t s; oware_rules_t r;
+    setup_grandslam(&s); oware_rules_default(&r);
+    r.grandslam_rule = OWARE_GS_OPPONENT_KEEPS;
+    /* give player 0 some board seeds that should sweep to opponent */
+    s.houses[0] = 5u;
+    oware_state_t out; oware_move_result_t res;
+    CHECK(oware__simulate_for_test(&s, &r, 5u, &out, &res));
+    CHECK(res.was_grand_slam);
+    CHECK(out.score[0] == 3u);       /* player took the slam */
+    CHECK(out.score[1] == 5u);       /* remaining board swept to opponent */
+    CHECK(oware_board_seeds(&out) == 0);
+}
+
+static void test_grandslam_leave_last(void) {
+    oware_state_t s; oware_rules_t r;
+    oware_rules_default(&r);
+    r.grandslam_rule = OWARE_GS_LEAVE_LAST;
+    /* chain of two opponent houses, both capturable, together = all opp seeds */
+    oware_init(&s);
+    memset(s.houses, 0, sizeof(s.houses));
+    s.turn = 0u;
+    s.houses[5] = 2u;    /* lands in 7 after 6,7 */
+    s.houses[6] = 1u;    /* ->2 (furthest back in chain) */
+    s.houses[7] = 2u;    /* ->3 (landing) */
+    oware_state_t out; oware_move_result_t res;
+    CHECK(oware__simulate_for_test(&s, &r, 5u, &out, &res));
+    CHECK(res.was_grand_slam);
+    CHECK(out.houses[7] == 0u);      /* landing captured */
+    CHECK(out.houses[6] == 2u);      /* furthest-back house spared */
+    CHECK(res.captured == 3u);
+    CHECK(out.score[0] == 3u);
+}
+
 int main(void) {
     test_init();
     test_ownership();
@@ -144,5 +203,6 @@ int main(void) {
     test_sow_basic(); test_sow_skip_origin();
     test_capture_simple(); test_capture_chained(); test_capture_stops_at_own_side();
     test_capture_three_four();
+    test_grandslam_no_capture(); test_grandslam_opponent_keeps(); test_grandslam_leave_last();
     TEST_REPORT();
 }
