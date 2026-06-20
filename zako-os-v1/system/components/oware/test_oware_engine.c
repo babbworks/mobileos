@@ -268,6 +268,49 @@ static void test_apply_capture_resets_cycle(void) {
     CHECK(s.score[0] == 3u);
 }
 
+static void test_over_first_to_n(void) {
+    oware_state_t s; oware_rules_t r;
+    oware_init(&s); oware_rules_default(&r);   /* target 25 */
+    s.score[0] = 25u;
+    oware_result_t res;
+    CHECK(oware_is_over(&s, &r, &res));
+    CHECK(res.outcome == OWARE_OUT_P0);
+}
+
+static void test_over_no_move_collects(void) {
+    oware_state_t s; oware_rules_t r;
+    oware_init(&s); oware_rules_default(&r);
+    memset(s.houses, 0, sizeof(s.houses));
+    s.turn = 0u;                 /* player 0 has no seeds -> cannot move */
+    s.houses[6] = 10u;           /* all remaining belong to player 1 */
+    s.houses[7] = 2u;
+    oware_result_t res;
+    CHECK(oware_is_over(&s, &r, &res));
+    CHECK(res.score[1] == 12u);  /* player 1 collects own side */
+    CHECK(res.outcome == OWARE_OUT_P1);
+}
+
+static void test_over_cycle_split(void) {
+    oware_state_t s; oware_rules_t r;
+    oware_init(&s); oware_rules_default(&r);
+    s.no_capture_plies = r.cycle_ply_limit;   /* trip the cycle */
+    oware_result_t res;
+    CHECK(oware_is_over(&s, &r, &res));
+    CHECK(res.score[0] == 24u);  /* each side's 24 seeds go to its owner */
+    CHECK(res.score[1] == 24u);
+    CHECK(res.outcome == OWARE_OUT_DRAW);
+}
+
+static void test_resolve_agreed(void) {
+    oware_state_t s; oware_rules_t r;
+    oware_init(&s); oware_rules_default(&r);
+    oware_result_t res;
+    oware_resolve_agreed(&s, &res);
+    CHECK(res.over);
+    CHECK(res.score[0] == 24u);
+    CHECK(res.score[1] == 24u);
+}
+
 int main(void) {
     test_init();
     test_ownership();
@@ -278,5 +321,7 @@ int main(void) {
     test_grandslam_no_capture(); test_grandslam_opponent_keeps(); test_grandslam_leave_last();
     test_legal_moves_basic(); test_feeding_obligation(); test_forbidden_grandslam();
     test_apply_move(); test_apply_rejects_illegal(); test_apply_capture_resets_cycle();
+    test_over_first_to_n(); test_over_no_move_collects(); test_over_cycle_split();
+    test_resolve_agreed();
     TEST_REPORT();
 }

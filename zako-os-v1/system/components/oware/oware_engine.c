@@ -215,3 +215,76 @@ bool oware_apply_move(oware_state_t *s, const oware_rules_t *r,
     }
     return true;
 }
+
+static void oware_collect_each_side(oware_state_t *s) {
+    for (uint8_t i = 0; i < OWARE_HOUSES; i++) {
+        if (s->houses[i] > 0u) {
+            uint8_t owner = (i < OWARE_SIDE) ? 0u : 1u;
+            s->score[owner] = (uint8_t)(s->score[owner] + s->houses[i]);
+            s->houses[i] = 0u;
+        }
+    }
+}
+
+static void oware_set_outcome(oware_result_t *res) {
+    if (res->score[0] > res->score[1]) {
+        res->outcome = OWARE_OUT_P0;
+    } else if (res->score[1] > res->score[0]) {
+        res->outcome = OWARE_OUT_P1;
+    } else {
+        res->outcome = OWARE_OUT_DRAW;
+    }
+}
+
+bool oware_is_over(const oware_state_t *s, const oware_rules_t *r,
+                   oware_result_t *res) {
+    res->over = false;
+    res->outcome = OWARE_OUT_NONE;
+    res->score[0] = s->score[0];
+    res->score[1] = s->score[1];
+
+    if (r->end_mode == OWARE_END_FIRST_TO_N) {
+        if ((s->score[0] >= r->target_score) ||
+            (s->score[1] >= r->target_score)) {
+            res->over = true;
+        }
+    }
+
+    if (!res->over && (oware_board_seeds(s) == 0)) {
+        res->over = true;                /* all seeds captured */
+    }
+
+    if (!res->over && (r->cycle_ply_limit > 0u) &&
+        (s->no_capture_plies >= r->cycle_ply_limit)) {
+        oware_state_t tmp = *s;
+        oware_collect_each_side(&tmp);
+        res->score[0] = tmp.score[0];
+        res->score[1] = tmp.score[1];
+        res->over = true;
+    }
+
+    if (!res->over) {
+        uint8_t mv[OWARE_SIDE];
+        if (oware_legal_moves(s, r, mv) == 0) {
+            oware_state_t tmp = *s;
+            oware_collect_each_side(&tmp);
+            res->score[0] = tmp.score[0];
+            res->score[1] = tmp.score[1];
+            res->over = true;
+        }
+    }
+
+    if (res->over) {
+        oware_set_outcome(res);
+    }
+    return res->over;
+}
+
+void oware_resolve_agreed(const oware_state_t *s, oware_result_t *res) {
+    oware_state_t tmp = *s;
+    oware_collect_each_side(&tmp);
+    res->over = true;
+    res->score[0] = tmp.score[0];
+    res->score[1] = tmp.score[1];
+    oware_set_outcome(res);
+}
