@@ -188,3 +188,30 @@ bool oware_is_legal(const oware_state_t *s, const oware_rules_t *r, uint8_t hous
     }
     return false;
 }
+
+bool oware_apply_move(oware_state_t *s, const oware_rules_t *r,
+                      uint8_t house, oware_move_result_t *res) {
+    if (!oware_is_legal(s, r, house)) {
+        return false;
+    }
+    uint8_t opp = (uint8_t)(s->turn ^ 1u);
+    bool was_feeding = (oware_side_seeds(s, opp) == 0);
+
+    oware_state_t out;
+    oware_move_result_t mr;
+    (void)oware_simulate(s, r, house, &out, &mr);
+    mr.forced_feed = was_feeding;
+
+    if (mr.captured > 0u) {
+        out.no_capture_plies = 0u;
+    } else {
+        out.no_capture_plies = (uint16_t)(s->no_capture_plies + 1u);
+    }
+    out.turn = (uint8_t)(s->turn ^ 1u);
+
+    *s = out;
+    if (res != NULL) {
+        *res = mr;
+    }
+    return true;
+}

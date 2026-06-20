@@ -235,6 +235,39 @@ static void test_forbidden_grandslam(void) {
     CHECK(!in_list(mv, n, 5u));          /* the slam move is excluded */
 }
 
+static void test_apply_move(void) {
+    oware_state_t s; oware_rules_t r;
+    oware_init(&s); oware_rules_default(&r);
+    oware_move_result_t res;
+    CHECK(oware_apply_move(&s, &r, 2u, &res));
+    CHECK(s.turn == 1u);                 /* turn switched */
+    CHECK(s.houses[2] == 0u);
+    CHECK(s.no_capture_plies == 1u);     /* no capture this move */
+    CHECK(oware_board_seeds(&s) + s.score[0] + s.score[1] == 48); /* conservation */
+}
+
+static void test_apply_rejects_illegal(void) {
+    oware_state_t s; oware_rules_t r;
+    oware_init(&s); oware_rules_default(&r);
+    oware_move_result_t res;
+    CHECK(!oware_apply_move(&s, &r, 6u, &res));  /* opponent house */
+    CHECK(s.turn == 0u);                          /* unchanged */
+}
+
+static void test_apply_capture_resets_cycle(void) {
+    oware_state_t s; oware_rules_t r;
+    oware_init(&s); oware_rules_default(&r);
+    memset(s.houses, 0, sizeof(s.houses));
+    s.turn = 0u; s.no_capture_plies = 7u;
+    s.houses[5] = 1u; s.houses[6] = 2u;  /* capture */
+    s.houses[7] = 1u;  /* extra seed so not a grand slam */
+    oware_move_result_t res;
+    CHECK(oware_apply_move(&s, &r, 5u, &res));
+    CHECK(res.captured == 3u);
+    CHECK(s.no_capture_plies == 0u);     /* reset on capture */
+    CHECK(s.score[0] == 3u);
+}
+
 int main(void) {
     test_init();
     test_ownership();
@@ -244,5 +277,6 @@ int main(void) {
     test_capture_three_four();
     test_grandslam_no_capture(); test_grandslam_opponent_keeps(); test_grandslam_leave_last();
     test_legal_moves_basic(); test_feeding_obligation(); test_forbidden_grandslam();
+    test_apply_move(); test_apply_rejects_illegal(); test_apply_capture_resets_cycle();
     TEST_REPORT();
 }
