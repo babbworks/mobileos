@@ -44,3 +44,43 @@ int oware_board_seeds(const oware_state_t *s) {
     }
     return total;
 }
+
+/* Sow only (capture added in Task 3). Returns false if 'house' is not a
+   valid own, non-empty source. Computes resulting board into *out. */
+static bool oware_simulate(const oware_state_t *s, const oware_rules_t *r,
+                           uint8_t house, oware_state_t *out,
+                           oware_move_result_t *res) {
+    uint8_t p = s->turn;
+    (void)r;
+    if (house >= OWARE_HOUSES) { return false; }
+    if (!oware_house_belongs_to(house, p)) { return false; }
+    if (s->houses[house] == 0u) { return false; }
+
+    *out = *s;
+    uint8_t seeds = out->houses[house];
+    out->houses[house] = 0u;
+    uint8_t i = house;
+    uint8_t last_placed = house;
+    while (seeds > 0u) {
+        i = (uint8_t)((i + 1u) % OWARE_HOUSES);
+        if (i == house) {
+            seeds--;                             /* origin counts as a position but receives no seed */
+            continue;
+        }
+        out->houses[i] = (uint8_t)(out->houses[i] + 1u);
+        last_placed = i;
+        seeds--;
+    }
+
+    res->landing = last_placed;
+    res->captured = 0u;
+    res->was_grand_slam = false;
+    res->forced_feed = false;
+    return true;
+}
+
+bool oware__simulate_for_test(const oware_state_t *s, const oware_rules_t *r,
+                              uint8_t house, oware_state_t *out,
+                              oware_move_result_t *res) {
+    return oware_simulate(s, r, house, out, res);
+}
