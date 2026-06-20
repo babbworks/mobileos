@@ -155,3 +155,36 @@ bool oware__simulate_for_test(const oware_state_t *s, const oware_rules_t *r,
                               oware_move_result_t *res) {
     return oware_simulate(s, r, house, out, res);
 }
+
+int oware_legal_moves(const oware_state_t *s, const oware_rules_t *r,
+                      uint8_t out[OWARE_SIDE]) {
+    uint8_t p = s->turn;
+    uint8_t opp = (uint8_t)(p ^ 1u);
+    bool opp_empty = (oware_side_seeds(s, opp) == 0);
+    int n = 0;
+    for (uint8_t h = 0; h < OWARE_HOUSES; h++) {
+        if (!oware_house_belongs_to(h, p)) { continue; }
+        if (s->houses[h] == 0u) { continue; }
+        oware_state_t tmp;
+        oware_move_result_t res;
+        if (!oware_simulate(s, r, h, &tmp, &res)) { continue; }
+        if (res.was_grand_slam && (r->grandslam_rule == OWARE_GS_FORBIDDEN)) {
+            continue;
+        }
+        if (opp_empty && (oware_side_seeds(&tmp, opp) == 0)) {
+            continue;                    /* fails feeding obligation */
+        }
+        out[n] = h;
+        n++;
+    }
+    return n;
+}
+
+bool oware_is_legal(const oware_state_t *s, const oware_rules_t *r, uint8_t house) {
+    uint8_t mv[OWARE_SIDE];
+    int n = oware_legal_moves(s, r, mv);
+    for (int k = 0; k < n; k++) {
+        if (mv[k] == house) { return true; }
+    }
+    return false;
+}

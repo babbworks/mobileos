@@ -196,6 +196,45 @@ static void test_grandslam_leave_last(void) {
     CHECK(out.score[0] == 3u);
 }
 
+static bool in_list(const uint8_t *a, int n, uint8_t v) {
+    for (int k = 0; k < n; k++) { if (a[k] == v) { return true; } }
+    return false;
+}
+
+static void test_legal_moves_basic(void) {
+    oware_state_t s; oware_rules_t r;
+    oware_init(&s); oware_rules_default(&r);
+    uint8_t mv[OWARE_SIDE];
+    int n = oware_legal_moves(&s, &r, mv);
+    CHECK(n == 6);                       /* all own houses non-empty */
+    CHECK(in_list(mv, n, 0u));
+    CHECK(in_list(mv, n, 5u));
+    CHECK(!in_list(mv, n, 6u));          /* opponent house never legal */
+}
+
+static void test_feeding_obligation(void) {
+    oware_state_t s; oware_rules_t r;
+    oware_init(&s); oware_rules_default(&r);
+    memset(s.houses, 0, sizeof(s.houses));
+    s.turn = 0u;
+    /* opponent (6..11) all empty; only house 5 can reach them */
+    s.houses[1] = 2u;   /* sows within own side -> does NOT feed -> illegal */
+    s.houses[5] = 3u;   /* reaches houses 6,7,8 -> feeds -> legal */
+    uint8_t mv[OWARE_SIDE];
+    int n = oware_legal_moves(&s, &r, mv);
+    CHECK(n == 1);
+    CHECK(mv[0] == 5u);
+}
+
+static void test_forbidden_grandslam(void) {
+    oware_state_t s; oware_rules_t r;
+    setup_grandslam(&s); oware_rules_default(&r);
+    r.grandslam_rule = OWARE_GS_FORBIDDEN;
+    uint8_t mv[OWARE_SIDE];
+    int n = oware_legal_moves(&s, &r, mv);
+    CHECK(!in_list(mv, n, 5u));          /* the slam move is excluded */
+}
+
 int main(void) {
     test_init();
     test_ownership();
@@ -204,5 +243,6 @@ int main(void) {
     test_capture_simple(); test_capture_chained(); test_capture_stops_at_own_side();
     test_capture_three_four();
     test_grandslam_no_capture(); test_grandslam_opponent_keeps(); test_grandslam_leave_last();
+    test_legal_moves_basic(); test_feeding_obligation(); test_forbidden_grandslam();
     TEST_REPORT();
 }
