@@ -45,13 +45,20 @@ int oware_board_seeds(const oware_state_t *s) {
     return total;
 }
 
-/* Sow only (capture added in Task 3). Returns false if 'house' is not a
+static bool oware_capturable(uint8_t count, oware_capture_rule_t rule) {
+    switch (rule) {
+        case OWARE_CAP_STANDARD:   return (count == 2u) || (count == 3u);
+        case OWARE_CAP_THREE_FOUR: return (count == 3u) || (count == 4u);
+        default:                   return false;
+    }
+}
+
+/* Sow + capture. Returns false if 'house' is not a
    valid own, non-empty source. Computes resulting board into *out. */
 static bool oware_simulate(const oware_state_t *s, const oware_rules_t *r,
                            uint8_t house, oware_state_t *out,
                            oware_move_result_t *res) {
     uint8_t p = s->turn;
-    (void)r;
     if (house >= OWARE_HOUSES) { return false; }
     if (!oware_house_belongs_to(house, p)) { return false; }
     if (s->houses[house] == 0u) { return false; }
@@ -76,6 +83,26 @@ static bool oware_simulate(const oware_state_t *s, const oware_rules_t *r,
     res->captured = 0u;
     res->was_grand_slam = false;
     res->forced_feed = false;
+
+    /* provisional capture chain: walk backward over opponent houses */
+    uint8_t cap_idx[OWARE_SIDE];
+    uint8_t cap_count = 0u;
+    uint8_t j = last_placed;
+    for (;;) {
+        if (oware_house_belongs_to(j, p)) { break; }          /* own side */
+        if (!oware_capturable(out->houses[j], r->capture_rule)) { break; }
+        cap_idx[cap_count] = j;
+        cap_count++;
+        if (cap_count >= OWARE_SIDE) { break; }
+        j = (j == 0u) ? (uint8_t)(OWARE_HOUSES - 1u) : (uint8_t)(j - 1u);
+    }
+
+    /* (grand-slam handling arrives in Task 5; for now capture normally) */
+    for (uint8_t c = 0; c < cap_count; c++) {
+        out->score[p] = (uint8_t)(out->score[p] + out->houses[cap_idx[c]]);
+        res->captured = (uint8_t)(res->captured + out->houses[cap_idx[c]]);
+        out->houses[cap_idx[c]] = 0u;
+    }
     return true;
 }
 

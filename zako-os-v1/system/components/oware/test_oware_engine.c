@@ -1,5 +1,6 @@
 #include "oware_engine.h"
 #include "oware_test.h"
+#include <string.h>
 
 static void test_init(void) {
     oware_state_t s;
@@ -66,10 +67,60 @@ static void test_sow_skip_origin(void) {
     CHECK(res.landing == 11u);           /* 12th seed lands in house 11, not 0 */
 }
 
+static void test_capture_simple(void) {
+    oware_state_t s; oware_rules_t r;
+    oware_init(&s); oware_rules_default(&r);
+    /* craft: player 0 to move; landing makes an opponent house exactly 3 */
+    memset(s.houses, 0, sizeof(s.houses));
+    s.houses[5] = 1u;   /* play this 1 seed -> lands in house 6 */
+    s.houses[6] = 2u;   /* becomes 3 -> captured */
+    oware_state_t out; oware_move_result_t res;
+    CHECK(oware__simulate_for_test(&s, &r, 5u, &out, &res));
+    CHECK(res.landing == 6u);
+    CHECK(res.captured == 3u);
+    CHECK(out.houses[6] == 0u);
+    CHECK(out.score[0] == 3u);
+}
+
+static void test_capture_chained(void) {
+    oware_state_t s; oware_rules_t r;
+    oware_init(&s); oware_rules_default(&r);
+    memset(s.houses, 0, sizeof(s.houses));
+    s.houses[5] = 3u;   /* lands in house 8 after 6,7,8 */
+    s.houses[6] = 1u;   /* ->2 captured */
+    s.houses[7] = 2u;   /* ->3 captured */
+    s.houses[8] = 1u;   /* ->2 captured (landing) */
+    oware_state_t out; oware_move_result_t res;
+    CHECK(oware__simulate_for_test(&s, &r, 5u, &out, &res));
+    CHECK(res.landing == 8u);
+    CHECK(res.captured == 7u);          /* 2 + 3 + 2 */
+    CHECK(out.houses[6] == 0u);
+    CHECK(out.houses[7] == 0u);
+    CHECK(out.houses[8] == 0u);
+    CHECK(out.score[0] == 7u);
+}
+
+static void test_capture_stops_at_own_side(void) {
+    oware_state_t s; oware_rules_t r;
+    oware_init(&s); oware_rules_default(&r);
+    memset(s.houses, 0, sizeof(s.houses));
+    /* player 1 to move; chain must stop when it reaches player 1's own houses */
+    s.turn = 1u;
+    s.houses[11] = 1u;  /* lands in house 0 (wrap) */
+    s.houses[0]  = 2u;  /* ->3 captured (opponent of p1) */
+    s.houses[1]  = 2u;  /* ->2? no: not on path; ensure stop at own side after 0 */
+    oware_state_t out; oware_move_result_t res;
+    CHECK(oware__simulate_for_test(&s, &r, 11u, &out, &res));
+    CHECK(res.landing == 0u);
+    CHECK(res.captured == 3u);          /* only house 0; house 11 is p1's own */
+    CHECK(out.score[1] == 3u);
+}
+
 int main(void) {
     test_init();
     test_ownership();
     test_rules_default();
     test_sow_basic(); test_sow_skip_origin();
+    test_capture_simple(); test_capture_chained(); test_capture_stops_at_own_side();
     TEST_REPORT();
 }
