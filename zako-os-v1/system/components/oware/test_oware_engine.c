@@ -116,11 +116,33 @@ static void test_capture_stops_at_own_side(void) {
     CHECK(out.score[1] == 3u);
 }
 
+static void test_capture_three_four(void) {
+    oware_state_t s; oware_rules_t r;
+    oware_init(&s); oware_rules_default(&r);
+    r.capture_rule = OWARE_CAP_THREE_FOUR;
+    memset(s.houses, 0, sizeof(s.houses));
+    s.houses[5] = 1u;
+    s.houses[6] = 3u;   /* ->4 captured under {3,4}; NOT under {2,3} */
+    oware_state_t out; oware_move_result_t res;
+    CHECK(oware__simulate_for_test(&s, &r, 5u, &out, &res));
+    CHECK(res.captured == 4u);
+    CHECK(out.score[0] == 4u);
+
+    /* and confirm a "2" is NOT captured under {3,4} */
+    oware_init(&s);
+    memset(s.houses, 0, sizeof(s.houses));
+    s.houses[5] = 1u;
+    s.houses[6] = 1u;   /* ->2: capturable under standard, not under {3,4} */
+    CHECK(oware__simulate_for_test(&s, &r, 5u, &out, &res));
+    CHECK(res.captured == 0u);
+}
+
 int main(void) {
     test_init();
     test_ownership();
     test_rules_default();
     test_sow_basic(); test_sow_skip_origin();
     test_capture_simple(); test_capture_chained(); test_capture_stops_at_own_side();
+    test_capture_three_four();
     TEST_REPORT();
 }
