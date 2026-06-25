@@ -31,3 +31,17 @@ and per-named-pair head-to-head records, in a tolerant line-based file
 (`$ZAKO_OWARE_HOME/oware.dat` or `$HOME/.local/share/zako-oware/oware.dat`).
 See `oware_store.h`. Names are sanitized (uppercase alnum, ≤15 chars); pair keys
 are order-independent; the table holds up to 64 pairs (no dynamic allocation).
+
+## oware (app)
+
+The playable terminal game. Build and run:
+
+```bash
+make            # builds liboware-*.a and the `oware` binary
+./oware         # play: vs Computer (Easy/Medium/Hard) or local 2-player
+```
+
+Numeric board, keys 1-6 to sow, `q` to concede a game. Pinned rule variant and
+win/loss records persist to `$ZAKO_OWARE_HOME/oware.dat` (default
+`$HOME/.local/share/zako-oware/oware.dat`). UI logic is driven through an
+injected `oware_io_t`, so the whole menu+game loop is unit-tested without a tty.
