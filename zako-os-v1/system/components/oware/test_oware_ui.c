@@ -109,6 +109,37 @@ static void test_play_game_vs_ai_completes(void) {
     CHECK(res.over);
 }
 
+static void test_run_vs_cpu_records(void) {
+    static const char *const lines[] = { "1", "1", "q", "5", NULL };
+    script_io_t s; oware_io_t io; script_io_init(&io, &s, lines);
+    oware_store_t st; oware_store_init(&st);
+    oware_ui_run(&io, &st, "/tmp/oware_ui_run_test.dat");
+    CHECK(st.cpu[OWARE_AI_EASY].wins + st.cpu[OWARE_AI_EASY].losses
+          + st.cpu[OWARE_AI_EASY].draws == 1u);
+    CHECK(st.cpu[OWARE_AI_EASY].draws == 1u);
+    (void)remove("/tmp/oware_ui_run_test.dat");
+}
+
+static void test_run_two_player_records(void) {
+    static const char *const lines[] = { "2", "Kofi", "Abena", "q", "5", NULL };
+    script_io_t s; oware_io_t io; script_io_init(&io, &s, lines);
+    oware_store_t st; oware_store_init(&st);
+    oware_ui_run(&io, &st, "/tmp/oware_ui_run_2p.dat");
+    oware_pair_record_t *p = oware_store_pair(&st, "Kofi", "Abena");
+    CHECK(p != NULL);
+    CHECK(p->draws == 1u);
+    (void)remove("/tmp/oware_ui_run_2p.dat");
+}
+
+static void test_run_settings_pin(void) {
+    static const char *const lines[] = { "4", "1", "5", NULL };
+    script_io_t s; oware_io_t io; script_io_init(&io, &s, lines);
+    oware_store_t st; oware_store_init(&st);
+    oware_ui_run(&io, &st, "/tmp/oware_ui_settings.dat");
+    CHECK(st.grandslam_rule == OWARE_GS_FORBIDDEN);
+    (void)remove("/tmp/oware_ui_settings.dat");
+}
+
 int main(void) {
     test_house_for_key();
     test_parse_house();
@@ -116,5 +147,8 @@ int main(void) {
     test_play_game_two_player_quit();
     test_play_game_illegal_then_legal();
     test_play_game_vs_ai_completes();
+    test_run_vs_cpu_records();
+    test_run_two_player_records();
+    test_run_settings_pin();
     TEST_REPORT();
 }

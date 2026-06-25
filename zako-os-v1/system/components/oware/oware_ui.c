@@ -100,3 +100,138 @@ oware_result_t oware_ui_play_game(const oware_rules_t *r,
     io->write_str(io, buf);
     return res;
 }
+
+static void ui_rules_from_store(const oware_store_t *st, oware_rules_t *r) {
+    oware_rules_default(r);
+    r->grandslam_rule = st->grandslam_rule;
+    r->capture_rule   = st->capture_rule;
+    r->end_mode       = st->end_mode;
+    r->target_score   = st->target_score;
+}
+
+static bool ui_prompt(oware_io_t *io, const char *prompt, char *buf, size_t cap) {
+    io->write_str(io, prompt);
+    return io->read_line(io, buf, cap);
+}
+
+static oware_game_result_t ui_result_for_side(const oware_result_t *res,
+                                              uint8_t side) {
+    if (res->outcome == OWARE_OUT_DRAW) {
+        return OWARE_GAME_DRAW;
+    }
+    bool side_won = (res->outcome == ((side == 0u) ? OWARE_OUT_P0 : OWARE_OUT_P1));
+    return side_won ? OWARE_GAME_WIN : OWARE_GAME_LOSS;
+}
+
+static void ui_do_vs_cpu(oware_io_t *io, oware_store_t *st, const char *path) {
+    char line[64];
+    if (!ui_prompt(io, "Difficulty (1=Easy 2=Medium 3=Hard): ", line, sizeof(line))) {
+        return;
+    }
+    oware_ai_difficulty_t d = OWARE_AI_MEDIUM;
+    if (line[0] == '1') { d = OWARE_AI_EASY; }
+    else if (line[0] == '3') { d = OWARE_AI_HARD; }
+    else { d = OWARE_AI_MEDIUM; }
+
+    oware_match_cfg_t m;
+    memset(&m, 0, sizeof(m));
+    m.vs_cpu = true;
+    m.human_side = 0u;
+    m.side_is_ai[0] = false;
+    m.side_is_ai[1] = true;
+    m.difficulty = d;
+    oware_ai_config_default(&m.ai_cfg, d);
+
+    oware_rules_t r;
+    ui_rules_from_store(st, &r);
+    oware_result_t res = oware_ui_play_game(&r, &m, io);
+    oware_store_record_cpu(st, d, ui_result_for_side(&res, m.human_side));
+    (void)oware_store_save(st, path);
+}
+
+static void ui_do_two_player(oware_io_t *io, oware_store_t *st, const char *path) {
+    char n1[64];
+    char n2[64];
+    if (!ui_prompt(io, "Player 1 name: ", n1, sizeof(n1))) { return; }
+    if (!ui_prompt(io, "Player 2 name: ", n2, sizeof(n2))) { return; }
+
+    oware_match_cfg_t m;
+    memset(&m, 0, sizeof(m));
+    m.vs_cpu = false;
+    m.side_is_ai[0] = false;
+    m.side_is_ai[1] = false;
+
+    oware_rules_t r;
+    ui_rules_from_store(st, &r);
+    oware_result_t res = oware_ui_play_game(&r, &m, io);
+    (void)oware_store_record_pair(st, n1, n2, ui_result_for_side(&res, 0u));
+    (void)oware_store_save(st, path);
+}
+
+static void ui_show_records(oware_io_t *io, oware_store_t *st, const char *path) {
+    char line[128];
+    static const char *const names[3] = { "Easy", "Medium", "Hard" };
+    io->write_str(io, "\n-- vs Computer (W-L-D) --\n");
+    for (size_t i = 0u; i < 3u; i++) {
+        (void)snprintf(line, sizeof(line), "  %-6s  %u-%u-%u\n", names[i],
+                       (unsigned)st->cpu[i].wins, (unsigned)st->cpu[i].losses,
+                       (unsigned)st->cpu[i].draws);
+        io->write_str(io, line);
+    }
+    io->write_str(io, "-- Head to head --\n");
+    for (uint8_t i = 0u; i < st->pair_count; i++) {
+        (void)snprintf(line, sizeof(line), "  %s %u - %u %s (draws %u)\n",
+                       st->pairs[i].a, (unsigned)st->pairs[i].wins_a,
+                       (unsigned)st->pairs[i].wins_b, st->pairs[i].b,
+                       (unsigned)st->pairs[i].draws);
+        io->write_str(io, line);
+    }
+    if (ui_prompt(io, "Reset vs-CPU records? (y/N): ", line, sizeof(line))) {
+        if ((line[0] == 'y') || (line[0] == 'Y')) {
+            oware_store_reset_cpu(st);
+            (void)oware_store_save(st, path);
+        }
+    }
+}
+
+static void ui_settings(oware_io_t *io, oware_store_t *st, const char *path) {
+    char line[64];
+    io->write_str(io,
+        "\nGrand-slam rule: 0=NoCapture 1=Forbidden 2=OpponentKeeps 3=LeaveLast\n");
+    if (!ui_prompt(io, "Pin variant (0-3): ", line, sizeof(line))) { return; }
+    if ((line[0] >= '0') && (line[0] <= '3')) {
+        st->grandslam_rule = (oware_grandslam_rule_t)(line[0] - '0');
+        (void)oware_store_save(st, path);
+        io->write_str(io, "Saved.\n");
+    }
+}
+
+void oware_ui_run(oware_io_t *io, oware_store_t *store, const char *path) {
+    for (;;) {
+        char line[64];
+        io->write_str(io,
+            "\n== OWARE ==\n"
+            "1) Play vs Computer\n"
+            "2) Two-Player\n"
+            "3) Records\n"
+            "4) Settings\n"
+            "5) Quit\n"
+            "Choose: ");
+        if (!io->read_line(io, line, sizeof(line))) {
+            break;
+        }
+        switch (line[0]) {
+            case '1': ui_do_vs_cpu(io, store, path);     break;
+            case '2': ui_do_two_player(io, store, path); break;
+            case '3': ui_show_records(io, store, path);  break;
+            case '4': ui_settings(io, store, path);      break;
+            case '5':
+            case 'q':
+            case 'Q':
+                return;
+            default:
+                io->write_str(io, "Invalid choice.\n");
+                break;
+        }
+    }
+}
