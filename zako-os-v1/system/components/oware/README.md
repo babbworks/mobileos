@@ -23,3 +23,11 @@ make test       # builds and runs engine + AI unit tests (ASan + UBSan)
 **AI:** see `oware_ai.h`. `oware_ai_config_default` → `oware_ai_choose_move`
 when `s->turn` matches the AI player. Returns a ring index (0–11) for
 `oware_apply_move`.
+
+## oware store
+
+Persistence for pinned rule settings, vs-computer ± records (per difficulty),
+and per-named-pair head-to-head records, in a tolerant line-based file
+(`$ZAKO_OWARE_HOME/oware.dat` or `$HOME/.local/share/zako-oware/oware.dat`).
+See `oware_store.h`. Names are sanitized (uppercase alnum, ≤15 chars); pair keys
+are order-independent; the table holds up to 64 pairs (no dynamic allocation).
