@@ -1,0 +1,5 @@
+*.o
+*.a
+*.dSYM/
+test_oware_engine
+test_oware_ai
