@@ -1,5 +1,5 @@
 #include "oware_ui.h"
-#include <stdio.h>
+#include <stdio.h>   /* snprintf only; no direct terminal I/O here */
 #include <string.h>
 
 bool oware_ui_house_for_key(uint8_t player, char key, uint8_t *house) {
@@ -51,6 +51,7 @@ oware_result_t oware_ui_play_game(const oware_rules_t *r,
     oware_state_t s;
     oware_init(&s);
     oware_result_t res;
+    memset(&res, 0, sizeof(res));
     char buf[512];
 
     for (;;) {
@@ -65,7 +66,8 @@ oware_result_t oware_ui_play_game(const oware_rules_t *r,
         if (m->side_is_ai[p]) {
             oware_ai_config_t cfg = m->ai_cfg;
             if (!oware_ai_choose_move(&s, r, &cfg, p, &house)) {
-                break; /* no move; is_over resolves next loop */
+                oware_resolve_agreed(&s, &res); /* no legal move: resolve now */
+                return res;
             }
             char msg[48];
             (void)snprintf(msg, sizeof(msg), "Computer plays %u.\n",
@@ -96,7 +98,7 @@ oware_result_t oware_ui_play_game(const oware_rules_t *r,
         (void)oware_apply_move(&s, r, house, &mr);
     }
 
-    (void)oware_ui_render_board(&s, 0u, buf, sizeof(buf));
+    (void)oware_ui_render_board(&s, s.turn, buf, sizeof(buf));
     io->write_str(io, buf);
     return res;
 }
@@ -131,7 +133,6 @@ static void ui_do_vs_cpu(oware_io_t *io, oware_store_t *st, const char *path) {
     oware_ai_difficulty_t d = OWARE_AI_MEDIUM;
     if (line[0] == '1') { d = OWARE_AI_EASY; }
     else if (line[0] == '3') { d = OWARE_AI_HARD; }
-    else { d = OWARE_AI_MEDIUM; }
 
     oware_match_cfg_t m;
     memset(&m, 0, sizeof(m));
