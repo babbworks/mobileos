@@ -3,6 +3,10 @@
 #include <string.h>
 #include <stdlib.h>
 
+/* test hook implemented in oware_ai.c */
+int oware_ai_eval_for_test(const oware_state_t *s, const oware_rules_t *r,
+                           uint8_t player);
+
 static void test_config_default(void) {
     oware_ai_config_t cfg;
     oware_ai_config_default(&cfg, OWARE_AI_MEDIUM);

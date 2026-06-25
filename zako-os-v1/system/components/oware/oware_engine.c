@@ -1,5 +1,5 @@
 #include "oware_engine.h"
-#include <string.h>
+#include <stddef.h>
 
 void oware_rules_default(oware_rules_t *r) {
     r->capture_rule    = OWARE_CAP_STANDARD;

@@ -1,5 +1,7 @@
 #ifndef OWARE_TEST_H
 #define OWARE_TEST_H
+/* WARNING: static counters below mean this header must be included in exactly
+   ONE translation unit per test binary. */
 #include <stdio.h>
 
 static int oware_tests_run = 0;

@@ -1,7 +1,5 @@
 #include "oware_ai.h"
 
-#include <stddef.h>
-
 #define OWARE_AI_WIN_BASE       100000
 #define OWARE_AI_EASY_RANDOM_PCT 20
 #define OWARE_AI_DEPTH_EASY      1
@@ -264,7 +262,7 @@ bool oware_ai_choose_move(const oware_state_t *s, const oware_rules_t *r,
     bool capture_order = false;
     bool iterative = false;
     bool random_ties = false;
-    uint8_t best = 0u;
+    uint8_t best = OWARE_HOUSES;   /* sentinel: illegal; caught by oware_is_legal */
     int d;
 
     if (s->turn != ai_player) {

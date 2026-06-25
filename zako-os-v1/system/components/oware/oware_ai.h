@@ -24,7 +24,4 @@ bool oware_ai_choose_move(const oware_state_t *s, const oware_rules_t *r,
                           const oware_ai_config_t *cfg, uint8_t ai_player,
                           uint8_t *house);
 
-int oware_ai_eval_for_test(const oware_state_t *s, const oware_rules_t *r,
-                           uint8_t player);
-
 #endif /* OWARE_AI_H */
