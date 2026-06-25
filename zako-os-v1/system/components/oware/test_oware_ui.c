@@ -2,6 +2,8 @@
 #include "oware_test.h"
 #include "oware_engine.h"
 #include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 static void test_house_for_key(void) {
     uint8_t h = 0xFFu;
@@ -38,9 +40,81 @@ static void test_render_board(void) {
     CHECK(strstr(buf, "Opp: 3") != NULL);
 }
 
+/* Scripted IO: feeds queued input lines; captures output into a buffer. */
+typedef struct {
+    const char *const *lines; /* NULL-terminated array of input lines */
+    size_t next;
+    char out[8192];
+    size_t out_len;
+} script_io_t;
+
+static bool script_read(oware_io_t *io, char *buf, size_t cap) {
+    script_io_t *s = (script_io_t *)io->ctx;
+    if (s->lines[s->next] == NULL) { return false; }
+    (void)snprintf(buf, cap, "%s", s->lines[s->next]);
+    s->next++;
+    return true;
+}
+
+static void script_write(oware_io_t *io, const char *str) {
+    script_io_t *s = (script_io_t *)io->ctx;
+    size_t len = strlen(str);
+    if ((s->out_len + len + 1u) < sizeof(s->out)) {
+        (void)memcpy(s->out + s->out_len, str, len);
+        s->out_len += len;
+        s->out[s->out_len] = '\0';
+    }
+}
+
+static void script_io_init(oware_io_t *io, script_io_t *s,
+                           const char *const *lines) {
+    s->lines = lines; s->next = 0u; s->out_len = 0u; s->out[0] = '\0';
+    io->read_line = script_read; io->write_str = script_write; io->ctx = s;
+}
+
+static void test_play_game_two_player_quit(void) {
+    static const char *const lines[] = { "q", NULL };
+    script_io_t s; oware_io_t io; script_io_init(&io, &s, lines);
+    oware_rules_t r; oware_rules_default(&r);
+    oware_match_cfg_t m;
+    memset(&m, 0, sizeof(m));
+    m.side_is_ai[0] = false; m.side_is_ai[1] = false;
+    oware_result_t res = oware_ui_play_game(&r, &m, &io);
+    CHECK(res.over);
+    CHECK(res.score[0] == 24u && res.score[1] == 24u);
+    CHECK(strstr(s.out, "Opp:") != NULL);
+}
+
+static void test_play_game_illegal_then_legal(void) {
+    static const char *const lines[] = { "7", "1", "q", NULL };
+    script_io_t s; oware_io_t io; script_io_init(&io, &s, lines);
+    oware_rules_t r; oware_rules_default(&r);
+    oware_match_cfg_t m;
+    memset(&m, 0, sizeof(m));
+    oware_result_t res = oware_ui_play_game(&r, &m, &io);
+    CHECK(strstr(s.out, "Illegal") != NULL);
+    CHECK(res.over);
+}
+
+static void test_play_game_vs_ai_completes(void) {
+    static const char *const lines[] = { "q", NULL };
+    script_io_t s; oware_io_t io; script_io_init(&io, &s, lines);
+    oware_rules_t r; oware_rules_default(&r);
+    oware_match_cfg_t m;
+    memset(&m, 0, sizeof(m));
+    m.side_is_ai[0] = false; m.side_is_ai[1] = true;
+    oware_ai_config_default(&m.ai_cfg, OWARE_AI_EASY);
+    m.difficulty = OWARE_AI_EASY;
+    oware_result_t res = oware_ui_play_game(&r, &m, &io);
+    CHECK(res.over);
+}
+
 int main(void) {
     test_house_for_key();
     test_parse_house();
     test_render_board();
+    test_play_game_two_player_quit();
+    test_play_game_illegal_then_legal();
+    test_play_game_vs_ai_completes();
     TEST_REPORT();
 }
